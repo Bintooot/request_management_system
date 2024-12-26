@@ -15,7 +15,6 @@ import CrateRequest from "./view/user/CreateRequest";
 import Inqure from "./view/user/Inqure";
 import Profile from "./view/user/Profile";
 import RequestRecord from "./view/user/RequestRecords";
-import Settings from "./view/user/Settings";
 
 function App() {
   return (
@@ -41,7 +40,6 @@ function App() {
           <Route path="/inqure" element={<Inqure />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/request-record" element={<RequestRecord />} />
-          <Route path="/settings" element={<Settings />} />
         </Routes>
       </div>
     </Router>

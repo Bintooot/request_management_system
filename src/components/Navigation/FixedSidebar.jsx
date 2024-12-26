@@ -32,9 +32,6 @@ const FixedSidebar = () => {
           <NavLink to="/profile">
             <li className="p-3 hover:bg-green-500">PROFILE</li>
           </NavLink>
-          <NavLink to="/settings">
-            <li className="p-3 hover:bg-green-500">SETTINGS</li>
-          </NavLink>
           <NavLink to="/">
             <li className="p-3 hover:bg-red-500">LOGOUT</li>
           </NavLink>
