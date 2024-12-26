@@ -8,7 +8,7 @@ const Avatar = () => {
         <img
           alt=""
           src={userphoto}
-          className="h-14 w-14 rounded-full ring-2 ring-black"
+          className="h-14 w-14 rounded-full ring-1 ring-black"
         />
       </div>
     </>
