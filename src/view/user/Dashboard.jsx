@@ -19,8 +19,8 @@ const Dashboard = () => {
           <Sidebar />
         </div>
       )}
-      <div className="flex">
-        <div className="bg-green-900 max-w-60 w-full h-screen md:block hidden">
+      <div className="flex min-h-screen">
+        <div className="bg-green-900 max-w-60 w-full md:block hidden">
           <Sidebar />
         </div>
         <div>
