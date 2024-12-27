@@ -31,7 +31,6 @@ const CreateRequest = () => {
           <div className="md:w-2/3 mx-auto my-5 ">
             <div className="p-10 text-center md:text-2lg">
               <h1 className="font-semibold text-3xl">CREATE REQUEST</h1>
-              <br />
               <p className="text-gray-500">
                 Please fill out the necessary details in the form below to
                 submit your request.
@@ -145,7 +144,7 @@ const CreateRequest = () => {
                     className="border-2 p-2 rounded hover:bg-red-700 bg-green-900 text-white"
                     type="reset"
                   >
-                    Clear
+                    Cancel
                   </button>
                   <button className="border-2 p-2 rounded hover:bg-green-600 bg-green-900 text-white">
                     Submit

@@ -1,17 +1,6 @@
 import React from "react";
 
-const Letter = (
-  Recipient,
-  RepPosition,
-  Designation,
-  Thru,
-  ThruPosition,
-  Address,
-  Body,
-  DivisionHeadName,
-  Title,
-  Organization
-) => {
+const Letter = () => {
   return (
     <div className="h-[85vh] overflow-x-auto">
       <h2 className="text-center text-2xl p-2">Request Letter</h2>
