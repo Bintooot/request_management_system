@@ -1,15 +1,50 @@
 import React from "react";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-import Letter from "../../components/Form/Letter";
 
-const CustomModal = ({ open, handleClose }) => {
+const CustomModal = ({ open, handleClose, selectedRequest }) => {
+  if (!open) return null;
+
   return (
-    <Modal open={open} onClick={handleClose}>
-      <Box className="absolute top-2/4 left-2/4 transform -translate-x-1/2 -translate-y-1/2 w-1/2  bg-white p-10 rounded-lg">
-        <Letter />
-      </Box>
-    </Modal>
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg w-96">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Request Details</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ×
+          </button>
+        </div>
+        {selectedRequest && (
+          <div className="space-y-2">
+            <p>
+              <span className="font-semibold">Request ID:</span>{" "}
+              {selectedRequest.requestId}
+            </p>
+            <p>
+              <span className="font-semibold">User:</span>{" "}
+              {selectedRequest.userName}
+            </p>
+            <p>
+              <span className="font-semibold">Type:</span>{" "}
+              {selectedRequest.typeOfChicks}
+            </p>
+            <p>
+              <span className="font-semibold">Quantity:</span>{" "}
+              {selectedRequest.quantityOfChicks}
+            </p>
+            <p>
+              <span className="font-semibold">Status:</span>{" "}
+              {selectedRequest.status}
+            </p>
+            <p>
+              <span className="font-semibold">Description:</span>{" "}
+              {selectedRequest.requestDescription}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

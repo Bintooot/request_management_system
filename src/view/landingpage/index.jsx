@@ -19,7 +19,7 @@ const LandingPage = () => {
             Chicks Request Management System
           </h1>
           <p className="text-xl text-center max-w-lg">
-            Streamline your poultry requests with our efficient management
+            Streamline your chicks requests with our efficient management
             system. Get access to resources and support for your farming needs.
           </p>
           <div className="flex gap-6 justify-center">
@@ -47,7 +47,7 @@ const LandingPage = () => {
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-4">Request Management</h3>
               <p className="text-gray-600">
-                Easy submission and tracking of poultry requests
+                Easy submission and tracking of chicks requests
               </p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
@@ -55,7 +55,7 @@ const LandingPage = () => {
                 Resource Distribution
               </h3>
               <p className="text-gray-600">
-                Efficient distribution of poultry resources
+                Efficient distribution of chicks resources
               </p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
