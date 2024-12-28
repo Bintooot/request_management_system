@@ -5,7 +5,6 @@ import Chicks from "../../assets/Chicks.png";
 const LandingPage = () => {
   return (
     <main className="flex flex-col min-h-screen">
-      {/* Hero Section */}
       <section className="md:flex min-h-[70vh] bg-gradient-to-r from-green-800 to-green-600 text-white">
         <div className="md:w-1/2 flex justify-center items-center p-8">
           <img
@@ -39,7 +38,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Services</h2>
@@ -68,7 +66,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
@@ -105,7 +102,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
       <section className="py-16 bg-green-800 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>

@@ -10,12 +10,10 @@ const ContactUs = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
       <section className="bg-green-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
@@ -25,7 +23,6 @@ const ContactUs = () => {
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Contact Form */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-6 text-green-800">
               Send us a Message
@@ -92,7 +89,6 @@ const ContactUs = () => {
             </form>
           </div>
 
-          {/* Contact Information */}
           <div className="space-y-8">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-green-800">
@@ -122,7 +118,6 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* Social Media Links */}
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-green-800">
                 Follow Us
