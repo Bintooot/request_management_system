@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navigation/Navbar";
 import Sidebar from "../../components/Navigation/Sidebar";
 import UserList from "../../components/TableList/UserList";
 import ProfileCard from "../../components/Card/ProfileCard";
@@ -76,8 +75,7 @@ const AdminAccounts = () => {
   };
   return (
     <>
-      <Navbar />
-      <div className="gap-3 md:m-16 p-5 md:flex    ">
+      <div className="gap-3 p-5 md:flex    ">
         <div className="md:w-1/3  mb-5">
           <Sidebar />
         </div>

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navigation/Navbar";
 import ListofRequest from "../../components/Card/ListofRequest";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
@@ -127,8 +126,7 @@ const RequestPending = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="md:mt-16  md:mx-16 p-5 gap-5 md:flex md:text-[1rem] text-sm">
+      <div className="md:flex p-2  gap-2">
         <div className=" border-2 text-sm p-5 shadow-lg rounded-lg md:w-1/3 w-full">
           <h1>
             <strong>List of Pendings</strong>

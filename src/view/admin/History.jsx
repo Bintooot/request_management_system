@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navigation/Navbar";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
 import CustomModal from "../../components/Modal/CustomModal";
@@ -111,8 +110,7 @@ const History = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="gap-5 md:m-16 p-5 border-2 shadow-lg h-full rounded-lg">
+      <div className=" p-5 border-2 shadow-lg h-full rounded-lg">
         <header className="font-semibold">
           <h1 className="text-xl">HISTORY</h1>
           <p className="text-gray-500 font-normal">

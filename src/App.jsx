@@ -16,6 +16,8 @@ import Inqure from "./view/user/Inqure";
 import Profile from "./view/user/Profile";
 import RequestRecord from "./view/user/RequestRecords";
 import FixedLayout from "./components/Layout/FixedLayout";
+import AdminLayout from "./components/Layout/adminlayout";
+
 function App() {
   return (
     <Router>
@@ -26,16 +28,20 @@ function App() {
           {/* Login and Register Side */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
           {/* Admin Side */}
-          <Route path="/admin-dashboard" element={<Dashboard />} />
-          <Route path="/request-pending" element={<RequestPending />} />
-          <Route path="/approved-request" element={<ApprovedRequest />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/user-account" element={<UserAccount />} />
-          <Route path="/admin-account" element={<AdminAccount />} />
+          <Route element={<AdminLayout />}>
+            <Route path="/admin-dashboard" element={<Dashboard />} />
+            <Route path="/request-pending" element={<RequestPending />} />
+            <Route path="/approved-request" element={<ApprovedRequest />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/accounts" element={<Accounts />} />
+            <Route path="/user-account" element={<UserAccount />} />
+            <Route path="/admin-account" element={<AdminAccount />} />
+          </Route>
+
+          {/* User Side */}
           <Route element={<FixedLayout />}>
-            {/* User Side */}
             <Route path="/user-dashboard" element={<Userdashboard />} />
             <Route path="/create-request" element={<CrateRequest />} />
             <Route path="/inqure" element={<Inqure />} />

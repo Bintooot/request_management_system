@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navigation/Navbar";
 import Button from "../../components/Button";
 import CustomModal from "../../components/Modal/CustomModal";
 import Dropdown from "../../components/Dropdown";
@@ -111,89 +110,86 @@ const ApprovedRequest = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="md:mt-16 h-full md:mx-16 p-3">
-        <div className="border-2 grow shadow-lg rounded-lg p-5">
-          <div className="flex justify-between my-2">
-            <h1 className="font-semibold text-xl my-2 uppercase">
-              Approved Request
-            </h1>
-            <div className="flex space-x-4">
-              <form action="" className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Search by Name or ID"
-                  className="border p-2 rounded shadow-lg"
-                />
+      <div className="border-2 grow shadow-lg rounded-lg p-5">
+        <div className="flex justify-between my-2">
+          <h1 className="font-semibold text-xl my-2 uppercase">
+            Approved Request
+          </h1>
+          <div className="flex space-x-4">
+            <form action="" className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Search by Name or ID"
+                className="border p-2 rounded shadow-lg"
+              />
 
-                <Dropdown
-                  statusdata={["On-Processed", "Completed", "Approved"]}
-                  placeholder="Filter by Status"
-                />
+              <Dropdown
+                statusdata={["On-Processed", "Completed", "Approved"]}
+                placeholder="Filter by Status"
+              />
 
-                <input type="date" className="border p-2 rounded shadow-lg" />
-              </form>
-            </div>
+              <input type="date" className="border p-2 rounded shadow-lg" />
+            </form>
           </div>
-          <div className="overflow-y-scroll md:text-sm text-xs h-96">
-            <table className="w-full text-center bg-gray-100 border-collapse">
-              <thead className="bg-white">
-                <tr>
-                  <th>Request ID</th>
-                  <th>User Name</th>
-                  <th>Type of Chicks</th>
-                  <th>Requested Date </th>
-                  <th>Approval Date</th>
-                  <th>Status</th>
-                  <th>File Attached</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {approved_list.map((items) => {
-                  return (
-                    <tr key={items.id} className="hover:bg-slate-200">
-                      <td>{items.id}</td>
-                      <td>{items.name}</td>
-                      <td>{items.requestType}</td>
-                      <td>{items.date_submited}</td>
-                      <td>{items.date_approved}</td>
-                      <td>
-                        <span className="bg-green-500 p-1 text-white rounded-lg">
-                          {items.status}
-                        </span>
-                      </td>
-                      <td>1</td>
-                      <td className="flex justify-evenly py-2">
-                        <Dropdown
-                          placeholder="Update Status"
-                          statusdata={["On-Processed", "Completed", "Cancel"]}
-                        />
-                        <Button
-                          name="View File"
-                          onClick={() => {
-                            handleOpen(), handleSelectedRequest(items);
-                            s;
-                          }}
-                          hoverbgcolor="hover:bg-orange-400"
-                        />
+        </div>
+        <div className="overflow-y-scroll md:text-sm text-xs h-96">
+          <table className="w-full text-center bg-gray-100 border-collapse">
+            <thead className="bg-white">
+              <tr>
+                <th>Request ID</th>
+                <th>User Name</th>
+                <th>Type of Chicks</th>
+                <th>Requested Date </th>
+                <th>Approval Date</th>
+                <th>Status</th>
+                <th>File Attached</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approved_list.map((items) => {
+                return (
+                  <tr key={items.id} className="hover:bg-slate-200">
+                    <td>{items.id}</td>
+                    <td>{items.name}</td>
+                    <td>{items.requestType}</td>
+                    <td>{items.date_submited}</td>
+                    <td>{items.date_approved}</td>
+                    <td>
+                      <span className="bg-green-500 p-1 text-white rounded-lg">
+                        {items.status}
+                      </span>
+                    </td>
+                    <td>1</td>
+                    <td className="flex justify-evenly py-2">
+                      <Dropdown
+                        placeholder="Update Status"
+                        statusdata={["On-Processed", "Completed", "Cancel"]}
+                      />
+                      <Button
+                        name="View File"
+                        onClick={() => {
+                          handleOpen(), handleSelectedRequest(items);
+                          s;
+                        }}
+                        hoverbgcolor="hover:bg-orange-400"
+                      />
 
-                        <Button name="Submit" />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div>
-            {selectedRequest && (
-              <CustomModal
-                open={openModal}
-                handleClose={handleClose}
-              ></CustomModal>
-            )}
-          </div>
+                      <Button name="Submit" />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          {selectedRequest && (
+            <CustomModal
+              open={openModal}
+              handleClose={handleClose}
+            ></CustomModal>
+          )}
         </div>
       </div>
     </>

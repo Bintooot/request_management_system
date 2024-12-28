@@ -2,7 +2,6 @@ import React from "react";
 import CardMenu from "../../components/Card/CardMenu";
 import { FaUserPlus } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
-import Navbar from "../../components/Navigation/Navbar";
 import Sidebar from "../../components/Navigation/Sidebar";
 import ChangeUsername from "../../components/Form/ChangeUsername";
 import ProfileCard from "../../components/Card/ProfileCard";
@@ -10,8 +9,7 @@ import ProfileCard from "../../components/Card/ProfileCard";
 const Accounts = () => {
   return (
     <>
-      <Navbar />
-      <div className="gap-3 md:m-16 p-5 md:flex    ">
+      <div className="gap-3  p-5 md:flex    ">
         <div className="md:w-1/3  mb-5">
           <Sidebar />
         </div>
