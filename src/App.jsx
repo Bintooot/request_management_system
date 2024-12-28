@@ -15,7 +15,7 @@ import CrateRequest from "./view/user/CreateRequest";
 import Inqure from "./view/user/Inqure";
 import Profile from "./view/user/Profile";
 import RequestRecord from "./view/user/RequestRecords";
-
+import FixedLayout from "./components/Layout/FixedLayout";
 function App() {
   return (
     <Router>
@@ -34,12 +34,15 @@ function App() {
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/user-account" element={<UserAccount />} />
           <Route path="/admin-account" element={<AdminAccount />} />
-          {/* User Side */}
-          <Route path="/user-dashboard" element={<Userdashboard />} />
-          <Route path="/create-request" element={<CrateRequest />} />
-          <Route path="/inqure" element={<Inqure />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/request-record" element={<RequestRecord />} />
+          <Route element={<FixedLayout />}>
+            {/* User Side */}
+            <Route path="/user-dashboard" element={<Userdashboard />} />
+            <Route path="/create-request" element={<CrateRequest />} />
+            <Route path="/inqure" element={<Inqure />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/request-record" element={<RequestRecord />} />
+          </Route>
+          <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
       </div>
     </Router>
