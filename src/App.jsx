@@ -17,17 +17,23 @@ import Profile from "./view/user/Profile";
 import RequestRecord from "./view/user/RequestRecords";
 import FixedLayout from "./components/Layout/FixedLayout";
 import AdminLayout from "./components/Layout/adminlayout";
-
+import PageNotFound from "./view/landingpage/PageNotFound";
+import AboutUs from "./view/landingpage/AboutUs";
+import ContactUs from "./view/landingpage/ContactUs";
+import LandingPageLayout from "./components/Layout/LandingPageLayout";
 function App() {
   return (
     <Router>
       <div>
         <Routes>
           {/* Landing Page */}
-          <Route path="/" element={<Index />} />
-          {/* Login and Register Side */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route element={<LandingPageLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
 
           {/* Admin Side */}
           <Route element={<AdminLayout />}>
@@ -48,7 +54,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/request-record" element={<RequestRecord />} />
           </Route>
-          <Route path="*" element={<h1>Not Found</h1>} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </div>
     </Router>

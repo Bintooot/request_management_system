@@ -1,33 +1,10 @@
 import React from "react";
 import logo from "../../../assets/Logo.png";
 import SignUp from "../../../components/Form/SignUp";
-import HorizontalNavbar from "../../../components/Navigation/HorizontalNavbar";
 
 const Register = () => {
-  const navlinks = [
-    {
-      id: 1,
-      name: "Home",
-      path: "/",
-    },
-    {
-      id: 2,
-      name: "Contact Us",
-      path: "/contact-us",
-    },
-    {
-      id: 3,
-      name: "About Us",
-      path: "/about-us",
-    },
-  ];
   return (
     <>
-      <HorizontalNavbar
-        logo={logo}
-        name="Chicks Request Management System"
-        navlinks={navlinks}
-      />
       <div className="grid place-items-center p-10 ">
         <div className="flex justify-center items-center p-5 h-full w-full gap-14 md:flex-row flex-col">
           <div className="md:w-1/2 w-full text-center">
