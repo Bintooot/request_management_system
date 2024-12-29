@@ -1,6 +1,49 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 
 const SignUp = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    contactnumber: "",
+    password: "",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      console.log(formData);
+
+      const response = await axios.post(
+        "http://localhost:5000/api/submitregister",
+        formData
+      );
+
+      setFormData({
+        username: "",
+        email: "",
+        contactnumber: "",
+        password: "",
+      });
+
+      //alert after sending the form
+      alert("Message sent successfully!");
+
+      console.log(response);
+    } catch (error) {
+      console.error(
+        "Error submitting data:",
+        error.response ? error.response.data.message : error.message
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="md:w-[500px]  bg-slate-200 p-5  rounded-lg shadow-lg w-full">
@@ -8,7 +51,7 @@ const SignUp = () => {
           Sign up
         </h2>
         <hr className="border-black my-2" />
-        <form action="#" method="POST" className="space-y-5  ">
+        <form className="space-y-5 " onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="username"
@@ -19,6 +62,9 @@ const SignUp = () => {
             <div className="mt-2">
               <input
                 id="username"
+                onChange={(e) => {
+                  setFormData({ ...formData, username: e.target.value });
+                }}
                 name="username"
                 type="text"
                 required
@@ -38,6 +84,9 @@ const SignUp = () => {
               <input
                 id="email"
                 name="email"
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                }}
                 type="email"
                 required
                 autoComplete="email"
@@ -57,6 +106,9 @@ const SignUp = () => {
               <input
                 id="number"
                 name="number"
+                onChange={(e) => {
+                  setFormData({ ...formData, contactnumber: e.target.value });
+                }}
                 type="text"
                 required
                 className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
@@ -74,25 +126,10 @@ const SignUp = () => {
             <div className="mt-2">
               <input
                 id="password"
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                }}
                 name="password"
-                type="password"
-                required
-                className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="confirm_password"
-              className="block text-sm/6 font-medium text-gray-900"
-            >
-              Confirm Password
-            </label>
-            <div className="mt-2">
-              <input
-                id="confirm_password"
-                name="confirm_password"
                 type="password"
                 required
                 className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
@@ -111,7 +148,7 @@ const SignUp = () => {
         </form>
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">
-          Already have an account.{" "}
+          Already have an account.
           <a
             href="#"
             className="font-semibold text-green-600 hover:text-green-500"
