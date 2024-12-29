@@ -1,14 +1,22 @@
 import express from "express";
 import cors from "cors";
-import records from "./routes/records.js";
+import { connectDB } from "./config/db.js";
+import dotenv from "dotenv";
+import indexRoutes from "./routes/router.js";
 
-const PORT = process.env.PORT || 5050;
+dotenv.config();
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/record", records);
+
+app.use("/api/submitcontactform", indexRoutes);
+
+// server port listener
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  connectDB();
+  console.log(`Running on a port ${PORT}`);
 });

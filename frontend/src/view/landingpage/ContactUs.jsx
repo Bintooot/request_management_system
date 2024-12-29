@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import axios from "axios";
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -8,8 +8,38 @@ const ContactUs = () => {
     message: "",
   });
 
-  const handleSubmit = (e) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    try {
+      console.log(formData);
+
+      const response = await axios.post(
+        "http://localhost:5000/api/submitcontactform",
+        formData
+      );
+
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+
+      //alert after sending the form
+      alert("Message sent successfully!");
+
+      console.log(response);
+    } catch (error) {
+      console.error(
+        "Error submitting data:",
+        error.response ? error.response.data.message : error.message
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -27,7 +57,7 @@ const ContactUs = () => {
             <h2 className="text-2xl font-bold mb-6 text-green-800">
               Send us a Message
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
