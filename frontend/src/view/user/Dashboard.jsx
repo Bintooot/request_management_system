@@ -46,19 +46,19 @@ const Dashboard = () => {
         <CardMenu
           title="Pending Requests"
           number="5"
-          icon={<RiTimeLine className="text-orange-500" />}
+          icon={<RiTimeLine className="text-white" />}
           className="bg-orange-50"
         />
         <CardMenu
           title="Completed Requests"
           number="8"
-          icon={<RiCheckboxCircleLine className="text-green-500" />}
+          icon={<RiCheckboxCircleLine className="text-white" />}
           className="bg-green-50"
         />
         <CardMenu
           title="Total Requests"
           number="13"
-          icon={<RiMailSendLine className="text-blue-500" />}
+          icon={<RiMailSendLine className="text-white" />}
           className="bg-blue-50"
         />
       </div>

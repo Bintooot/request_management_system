@@ -13,6 +13,7 @@ const CreateRequest = () => {
     location: "",
     requestDate: "",
     file: null,
+    fileName: "",
   });
 
   const [step, setStep] = useState(1);
@@ -82,7 +83,18 @@ const CreateRequest = () => {
             className="space-y-6"
           >
             <h2 className="text-2xl font-bold mb-6">Personal Information</h2>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3  gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  ID
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value="1"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Name
@@ -125,7 +137,7 @@ const CreateRequest = () => {
             className="space-y-6"
           >
             <h2 className="text-2xl font-bold mb-6">Request Details</h2>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Type of Chicks
@@ -136,7 +148,9 @@ const CreateRequest = () => {
                   onChange={handleInputChange}
                   className="mt-1 border-2 block  p-1 w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 >
-                  <option value="">Select Type</option>
+                  <option value="" disabled>
+                    Select Type
+                  </option>
                   <option value="mix">Mix</option>
                   <option value="broiler">Broiler</option>
                   <option value="layer">Layer</option>
@@ -155,7 +169,22 @@ const CreateRequest = () => {
                   className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
-              <div className="col-span-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Quantity
+                </label>
+                <input
+                  required
+                  type="text"
+                  name="persons"
+                  value={formData.quantity}
+                  readOnly
+                  onChange={calculateQuantity}
+                  className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              <div className="col-span-3">
                 <label className="block text-sm font-medium text-gray-700">
                   Description
                 </label>
@@ -168,7 +197,7 @@ const CreateRequest = () => {
                   className="mt-1 p-2 border-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <label className="block text-sm font-medium text-gray-700">
                   File or Letter
                 </label>
@@ -322,8 +351,56 @@ const CreateRequest = () => {
               </h3>
               <div className="border-t border-b py-2">
                 <div className="flex justify-between py-1">
-                  <span>Item/Service Description</span>
-                  <span>Quantity/Details</span>
+                  <span className="text-gray-600">Number of Person</span>
+                  <input
+                    type="number"
+                    value={formData.persons}
+                    className="p-1 text-end"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              <div className="border-t border-b py-2">
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-600">Quantity</span>
+                  <input
+                    type="number"
+                    value={formData.quantity}
+                    className="p-1 text-end"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              <div className="border-t border-b py-2">
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-600">Attached File or Letter</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      onChange={handleInputChange}
+                      className="hidden"
+                      id="fileInput"
+                    />
+                    <label
+                      htmlFor="fileInput"
+                      className="cursor-pointer bg-gray-100 px-3 py-1 rounded hover:bg-gray-200"
+                    >
+                      Choose File
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-b py-2">
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-600">Discription</span>
+
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    className="mt-1 p-2 block w-1/2 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 h-32 overflow-y-auto resize-none"
+                    placeholder="Enter description here..."
+                  />
                 </div>
               </div>
             </div>
