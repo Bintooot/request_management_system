@@ -1,44 +1,39 @@
 import React, { useState } from "react";
 import axios from "axios";
-const ContactUs = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
 
-  const [isLoading, setIsLoading] = useState(false);
+const ContactUs = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    const contactUsData = {
+      name,
+      email,
+      subject,
+      message,
+    };
+
     try {
-      console.log(formData);
-
+      setLoading(true);
       const response = await axios.post(
-        "http://localhost:5000/api/submitcontactform",
-        formData
+        "http://localhost:5000/api/contactUs",
+        contactUsData
       );
 
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
-
-      //alert after sending the form
-      alert("Message sent successfully!");
-
-      console.log(response);
+      if (response.status === 201) {
+        setStatusMessage("Your message has been sent successfully!");
+      }
     } catch (error) {
-      console.error(
-        "Error submitting data:",
-        error.response ? error.response.data.message : error.message
-      );
+      setStatusMessage("Error sending your message. Please try again.");
+      console.error("Error:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -64,10 +59,8 @@ const ContactUs = () => {
                   type="text"
                   required
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div>
@@ -76,10 +69,8 @@ const ContactUs = () => {
                   type="email"
                   required
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div>
@@ -90,10 +81,8 @@ const ContactUs = () => {
                   type="text"
                   required
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
-                  value={formData.subject}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subject: e.target.value })
-                  }
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
                 />
               </div>
               <div>
@@ -104,19 +93,31 @@ const ContactUs = () => {
                   required
                   rows={6}
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                 />
               </div>
+
               <button
                 type="submit"
                 className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors"
+                disabled={loading} // Disable button when loading
               >
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
               </button>
             </form>
+
+            {statusMessage && (
+              <p
+                className={`mt-4 text-lg font-semibold ${
+                  statusMessage.includes("success")
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {statusMessage}
+              </p>
+            )}
           </div>
 
           <div className="space-y-8">

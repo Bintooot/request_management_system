@@ -4,9 +4,9 @@ import { NavLink } from "react-router-dom";
 const HorizontalNavbar = ({ logo, name, navlinks }) => {
   return (
     <>
-      <div className="md:flex justify-between items-center p-2">
+      <div className="md:flex justify-between mx-2 items-center p-2">
         <div className="flex items-center gap-3">
-          <img src={logo} alt="" width={75} />
+          <img src={logo} alt="" width={70} />
           <h1>{name}</h1>
         </div>
         <nav className="py-2 px-2">

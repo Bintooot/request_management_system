@@ -1,6 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const loginAccountt = { email, password };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/loginAccount",
+        loginAccountt
+      );
+
+      if (response.data.success) {
+        alert("Login successful!");
+
+        localStorage.setItem("authToken", response.data.token);
+
+        navigate("/user-dashboard");
+      }
+
+      window.location.href = "/user-dashboard";
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Login failed";
+      alert(errorMessage);
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="md:w-[500px]  bg-slate-200 p-5  rounded-lg shadow-lg w-full">
@@ -8,7 +45,7 @@ const SignIn = () => {
           Sign In
         </h2>
         <hr className="border-black my-2" />
-        <form action="#" method="POST" className="space-y-6">
+        <form onSubmit={handleSubmit} method="POST" className="space-y-6">
           <div>
             <label
               htmlFor="email"
@@ -21,6 +58,7 @@ const SignIn = () => {
                 id="email"
                 name="email"
                 type="email"
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
                 className="block w-full rounded-md border-0 p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
@@ -47,6 +85,7 @@ const SignIn = () => {
             </div>
             <div className="mt-2">
               <input
+                onChange={(e) => setPassword(e.target.value)}
                 id="password"
                 name="password"
                 type="password"

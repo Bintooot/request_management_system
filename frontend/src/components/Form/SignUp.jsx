@@ -1,44 +1,49 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    contactnumber: "",
-    password: "",
-  });
+  const [username, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactnumber, setContactNumber] = useState("");
+  const [password, setPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!username || !email || !contactnumber || !password) {
+      alert("All fields are required.");
+      setIsLoading(false);
+      return;
+    }
+
+    const userAccount = { username, email, contactnumber, password };
     try {
-      console.log(formData);
+      console.log("Sending registration request:", userAccount);
 
       const response = await axios.post(
-        "http://localhost:5000/api/submitregister",
-        formData
+        "http://localhost:5000/api/registerAccount",
+        userAccount
       );
 
-      setFormData({
-        username: "",
-        email: "",
-        contactnumber: "",
-        password: "",
-      });
-
-      //alert after sending the form
-      alert("Message sent successfully!");
-
-      console.log(response);
+      if (response.data.success) {
+        alert("Registration successful!");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000); // Add delay to show alert
+      } else {
+        throw new Error(response.data.message || "Registration failed");
+      }
     } catch (error) {
-      console.error(
-        "Error submitting data:",
-        error.response ? error.response.data.message : error.message
-      );
+      const errorMessage =
+        error.response?.data?.message || error.message || "Registration failed";
+      alert(errorMessage);
+      console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -62,9 +67,7 @@ const SignUp = () => {
             <div className="mt-2">
               <input
                 id="username"
-                onChange={(e) => {
-                  setFormData({ ...formData, username: e.target.value });
-                }}
+                onChange={(e) => setUserName(e.target.value)}
                 name="username"
                 type="text"
                 required
@@ -84,9 +87,7 @@ const SignUp = () => {
               <input
                 id="email"
                 name="email"
-                onChange={(e) => {
-                  setFormData({ ...formData, email: e.target.value });
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 required
                 autoComplete="email"
@@ -106,9 +107,7 @@ const SignUp = () => {
               <input
                 id="number"
                 name="number"
-                onChange={(e) => {
-                  setFormData({ ...formData, contactnumber: e.target.value });
-                }}
+                onChange={(e) => setContactNumber(e.target.value)}
                 type="text"
                 required
                 className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
@@ -126,9 +125,7 @@ const SignUp = () => {
             <div className="mt-2">
               <input
                 id="password"
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value });
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 name="password"
                 type="password"
                 required

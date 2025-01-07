@@ -21,6 +21,7 @@ import PageNotFound from "./view/landingpage/PageNotFound";
 import AboutUs from "./view/landingpage/AboutUs";
 import ContactUs from "./view/landingpage/ContactUs";
 import LandingPageLayout from "./components/Layout/LandingPageLayout";
+
 function App() {
   return (
     <Router>
