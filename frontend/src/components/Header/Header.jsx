@@ -4,7 +4,7 @@ import { FaUser } from "react-icons/fa";
 import Banner from "../Banner/Logo";
 import { GiHamburgerMenu } from "react-icons/gi";
 
-const Header = ({ togglehandler }) => {
+const Header = ({ togglehandler, username }) => {
   return (
     <>
       <div className="flex justify-between px-5 items-center border-b shadow-lg bg-slate-300 grow h-20 sticky top-0">
@@ -23,7 +23,7 @@ const Header = ({ togglehandler }) => {
           </div>
           <div className="p-2 cursor-pointer flex gap-3 items-center md:text-sm sm:text-sm">
             <FaUser fontSize={20} />
-            <p>BEN ANIASCO </p>
+            <p>{username} </p>
           </div>
         </div>
       </div>

@@ -3,27 +3,20 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 export const loginAccount = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    const { email, password } = req.body;
-
-    const userEmail = await User.findOne({ email });
-    if (!userEmail) {
+    const user = await User.findOne({ email });
+    if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, userEmail.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
-
-    if (!process.env.JWT_SECRET_KEY) {
-      throw new Error("JWT_SECRET_KEY is not defined in environment variables");
-    }
-
     const token = jwt.sign(
-      { userId: userEmail._id },
+      { id: user._id, email: user.email },
       process.env.JWT_SECRET_KEY,
       {
         expiresIn: "1h",

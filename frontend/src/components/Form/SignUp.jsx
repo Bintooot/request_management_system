@@ -3,26 +3,64 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
+  const [accountid, setAccountId] = useState("");
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [contactnumber, setContactNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [position, setPosition] = useState("");
+  const [address, setAddress] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const generateID = () => {
+    const random = Math.floor(Math.random() * 100000000)
+      .toString()
+      .padStart(8, "0");
+    return `${random}`;
+  };
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setAccountId(generateID());
 
-    if (!username || !email || !contactnumber || !password) {
+    console.log({
+      accountid,
+      username,
+      email,
+      contactnumber,
+      password,
+      position,
+      address,
+    });
+
+    if (
+      !accountid ||
+      !username ||
+      !email ||
+      !contactnumber ||
+      !password ||
+      !position ||
+      !address
+    ) {
       alert("All fields are required.");
       setIsLoading(false);
       return;
     }
 
-    const userAccount = { username, email, contactnumber, password };
+    const userAccount = {
+      accountid,
+      username,
+      email,
+      contactnumber,
+      password,
+      position,
+      address,
+    };
+
     try {
       console.log("Sending registration request:", userAccount);
 
@@ -62,52 +100,14 @@ const SignUp = () => {
               htmlFor="username"
               className="block text-sm/6 font-medium text-gray-900"
             >
-              Username
+              Fullname
             </label>
             <div className="mt-2">
               <input
+                placeholder="Enter fullname"
                 id="username"
                 onChange={(e) => setUserName(e.target.value)}
                 name="username"
-                type="text"
-                required
-                className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm/6 font-medium text-gray-900"
-            >
-              Email address
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                required
-                autoComplete="email"
-                className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="number"
-              className="block text-sm/6 font-medium text-gray-900"
-            >
-              Contact Number
-            </label>
-            <div className="mt-2">
-              <input
-                id="number"
-                name="number"
-                onChange={(e) => setContactNumber(e.target.value)}
                 type="text"
                 required
                 className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
@@ -124,6 +124,7 @@ const SignUp = () => {
             </label>
             <div className="mt-2">
               <input
+                placeholder="Enter password"
                 id="password"
                 onChange={(e) => setPassword(e.target.value)}
                 name="password"
@@ -131,6 +132,89 @@ const SignUp = () => {
                 required
                 className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
               />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm/6 font-medium text-gray-900"
+            >
+              Email address
+            </label>
+            <div className="mt-2">
+              <input
+                placeholder="example@gmail.com"
+                id="email"
+                name="email"
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                required
+                autoComplete="email"
+                className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="address"
+              className="block text-sm/6 font-medium text-gray-900"
+            >
+              Address
+            </label>
+            <div className="mt-2">
+              <input
+                id="address"
+                placeholder="Street address, City"
+                name="address"
+                onChange={(e) => setAddress(e.target.value)}
+                type="text"
+                required
+                className="block w-full rounded-md border-0 py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
+              />
+            </div>
+          </div>
+          <div className="flex justify-between items-center gap-2">
+            <div className="flex-1">
+              <label
+                htmlFor="number"
+                className="block text-sm/6 font-medium text-gray-900"
+              >
+                Contact Number
+              </label>
+              <div className="mt-2">
+                <input
+                  id="number"
+                  placeholder="############"
+                  name="number"
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  type="number"
+                  required
+                  className="rounded-md border-0  w-full py-1.5 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <label
+                htmlFor="number"
+                className="block text-sm/6 font-medium text-gray-900"
+              >
+                Position
+              </label>
+              <div className="mt-2">
+                <select
+                  name="position"
+                  onChange={(e) => setPosition(e.target.value)}
+                  id="position"
+                  className="p-2 rounded-md w-full text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6"
+                >
+                  <option disabled selected>
+                    Select Position
+                  </option>
+                  <option value="leader">Leader</option>
+                  <option value="member">Member</option>
+                </select>
+              </div>
             </div>
           </div>
 

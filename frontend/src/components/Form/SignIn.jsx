@@ -20,15 +20,10 @@ const SignIn = () => {
         loginAccountt
       );
 
-      if (response.data.success) {
-        alert("Login successful!");
-
-        localStorage.setItem("authToken", response.data.token);
-
-        navigate("/user-dashboard");
-      }
-
-      window.location.href = "/user-dashboard";
+      const { token } = response.data;
+      localStorage.setItem("authToken", token); // Save token in local storage
+      alert("Login successful!");
+      navigate("/user-dashboard"); // Redirect to dashboard
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
       alert(errorMessage);

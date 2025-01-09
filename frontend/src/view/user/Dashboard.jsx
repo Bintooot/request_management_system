@@ -1,5 +1,7 @@
 import React from "react";
 import CardMenu from "../../components/Card/CardMenu";
+import { useOutletContext } from "react-router-dom";
+
 import {
   RiMailSendLine,
   RiTimeLine,
@@ -16,6 +18,17 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
+  const { user } = useOutletContext() || { user: null };
+
+  if (!user) {
+    return (
+      <div className="text-center mt-10">
+        <h2 className="text-xl font-semibold text-gray-700">
+          Loading user data...
+        </h2>
+      </div>
+    );
+  }
   // Sample data for chart
   const chartData = [
     { name: "Jan", requests: 4 },
@@ -35,7 +48,9 @@ const Dashboard = () => {
     <div className="bg-gray-50 min-h-screen">
       {/* Welcome Section */}
       <div className="p-6 bg-white shadow-sm rounded-lg m-6">
-        <h1 className="font-bold text-3xl text-gray-800">Welcome Back, Ben!</h1>
+        <h1 className="font-bold text-3xl text-gray-800">
+          Welcome Back, {user.username || "User"}!
+        </h1>
         <p className="text-gray-600 mt-2">
           Here's an overview of your requests
         </p>

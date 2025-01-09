@@ -3,6 +3,10 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
+    accountid: {
+      type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
@@ -16,6 +20,14 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     password: {
+      type: String,
+      required: true,
+    },
+    position: {
+      type: String,
+      required: true,
+    },
+    address: {
       type: String,
       required: true,
     },

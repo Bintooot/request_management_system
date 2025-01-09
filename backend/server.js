@@ -8,6 +8,8 @@ import morgan from "morgan";
 import contactRoute from "./routes/contactRoute.js";
 import RegisterRoute from "./routes/RegisterRoute.js";
 import LoginRoute from "./routes/LoginRoute.js";
+import ProfileRoute from "./routes/profileRoute.js";
+import UpdateAccoutRoute from "./routes/UpdateAccountRoute.js";
 
 const app = express();
 
@@ -23,6 +25,8 @@ mongoose
 app.use("/api/contactUs", contactRoute);
 app.use("/api/registerAccount", RegisterRoute);
 app.use("/api/loginAccount", LoginRoute);
+app.use("/api/user-dashboard", ProfileRoute);
+app.use("/api/updateAccount", UpdateAccoutRoute);
 
 const PORT = process.env.PORT || 5000;
 
