@@ -11,6 +11,7 @@ import LoginRoute from "./routes/LoginRoute.js";
 import ProfileRoute from "./routes/profileRoute.js";
 import UpdateAccoutRoute from "./routes/UpdateAccountRoute.js";
 import CreateRequestRoute from "./routes/CreateRequestRoute.js";
+import GetUserRequest from "./routes/GetUserRequest.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/loginAccount", LoginRoute);
 app.use("/api/user-dashboard", ProfileRoute);
 app.use("/api/updateAccount", UpdateAccoutRoute);
 app.use("/api/submit-request", CreateRequestRoute);
+app.use("/api/getuser-request", GetUserRequest);
 
 const PORT = process.env.PORT || 5000;
 

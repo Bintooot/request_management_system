@@ -1,79 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomModal from "../../components/Modal/CustomModal";
 import RequestCard from "../../components/Card/RequestCard";
+import axios from "axios";
+
 const RequestRecords = () => {
-  const requestData = [
-    {
-      id: 1,
-      requestId: "REQ-2024-001",
-      userName: "John Doe",
-      reviewedBy: "Jane Doe",
-      typeOfChicks: "Broiler",
-      numberOfPerson: 5,
-      quantityOfChicks: 100,
-      requestDescription: "Requesting for broiler chicks for farm",
-      requestedDate: "2023-10-01",
-      reviewedDate: "2023-10-05",
-      status: "Approved",
-      fileAttached: "file1.pdf",
-    },
-    {
-      id: 2,
-      requestId: "123s#s",
-      userName: "John Doe",
-      reviewedBy: "Jane Doe",
-      typeOfChicks: "Broiler",
-      numberOfPerson: 5,
-      quantityOfChicks: 100,
-      requestDescription: "Requesting for broiler chicks for farm",
-      requestedDate: "2023-10-01",
-      reviewedDate: "2023-10-05",
-      status: "Approved",
-      fileAttached: "file1.pdf",
-    },
-    {
-      id: 3,
-      requestId: "asda2sd4",
-      userName: "John Doe",
-      reviewedBy: "Jane Doe",
-      typeOfChicks: "Broiler",
-      numberOfPerson: 5,
-      quantityOfChicks: 100,
-      requestDescription: "Requesting for broiler chicks for farm",
-      requestedDate: "2023-10-01",
-      reviewedDate: "2023-10-05",
-      status: "Pending",
-      fileAttached: "file1.pdf",
-    },
-    {
-      id: 4,
-      requestId: "asda2sd4",
-      userName: "John Doe",
-      reviewedBy: "Jane Doe",
-      typeOfChicks: "Broiler",
-      numberOfPerson: 5,
-      quantityOfChicks: 100,
-      requestDescription: "Requesting for broiler chicks for farm",
-      requestedDate: "2023-10-01",
-      reviewedDate: "2023-10-05",
-      status: "Pending",
-      fileAttached: "file1.pdf",
-    },
-    {
-      id: 5,
-      requestId: "asda2sd4ss",
-      userName: "John Doe",
-      reviewedBy: "Jane Doe",
-      typeOfChicks: "Broiler",
-      numberOfPerson: 5,
-      quantityOfChicks: 100,
-      requestDescription: "Requesting for broiler chicks for farm",
-      requestedDate: "2023-10-01",
-      reviewedDate: "2023-10-05",
-      status: "Pending",
-      fileAttached: "file1.pdf",
-    },
-  ];
+  const [userRequests, setUserRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   //Open Modal
   const [openModal, setOpenModal] = useState(false);
@@ -87,20 +19,52 @@ const RequestRecords = () => {
     setSelectedReqest(items);
   };
 
+  useEffect(() => {
+    const fetchUserRequests = async () => {
+      const token = localStorage.getItem("authToken");
+
+      console.log(token);
+
+      if (!token) {
+        // Redirect to login page or show an error
+        console.error("No token found, please log in.");
+        return;
+      }
+
+      try {
+        const response = await axios.get("/api/getuser-request", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUserRequests(response.data);
+      } catch (error) {
+        console.error("Error fetching user requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRequests();
+  }, []); // Empty array ensures this only runs on component mount
+
+  if (loading) return <p>Loading...</p>;
+
   return (
     <main className="flex justify-center flex-col p-4 sm:p-8">
-      {/* Requests Section */}
       <div className="flex flex-col items-center h-96 border-b-2 overflow-auto">
-        {requestData?.length > 0 ? (
-          requestData.map((item) => (
-            <RequestCard key={`${item.id}-${item.requestId}`} items={item} />
+        {loading ? (
+          <div className="text-center p-4">Loading requests...</div>
+        ) : userRequests?.length > 0 ? (
+          userRequests.map((item) => (
+            <RequestCard key={item._id} items={item} />
           ))
         ) : (
           <div className="text-center p-4 text-gray-500">No requests found</div>
         )}
       </div>
 
-      {/* Request History Section */}
       <div className="my-4">
         <h1 className="text-xl font-semibold sm:text-2xl">Request History</h1>
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
@@ -125,7 +89,6 @@ const RequestRecords = () => {
             <table className="w-full text-center">
               <thead className="sticky top-0 bg-slate-200">
                 <tr className="font-semibold text-xs sm:text-sm">
-                  <th className="border-b p-2">ID</th>
                   <th className="border-b p-2">Request ID</th>
                   <th className="border-b p-2">User</th>
                   <th className="border-b p-2">Reviewed By</th>
@@ -138,11 +101,10 @@ const RequestRecords = () => {
                 </tr>
               </thead>
               <tbody>
-                {requestData.map((items) => (
-                  <tr key={items.id} className="text-xs sm:text-sm">
-                    <td className="border-b p-3">{items.id}</td>
-                    <td className="border-b p-3">{items.requestId}</td>
-                    <td className="border-b p-3">{items.userName}</td>
+                {userRequests.map((items) => (
+                  <tr key={items._id} className="text-xs sm:text-sm">
+                    <td className="border-b p-3">{items.generatedRequestNo}</td>
+                    <td className="border-b p-3">{items.requesterName}</td>
                     <td className="border-b p-3">{items.reviewedBy}</td>
                     <td className="border-b p-3">{items.typeOfChicks}</td>
                     <td className="border-b p-3">{items.numberOfPerson}</td>

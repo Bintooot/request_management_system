@@ -11,35 +11,52 @@ const RequestCard = ({ items }) => {
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <p className="text-gray-600 text-sm">Request No</p>
-              <p className="font-medium"> {items.requestId}</p>
+              <p className="font-medium"> {items.generatedRequestNo}</p>
             </div>
+            <div>
+              <p className="text-gray-600 text-sm">Requester Name:</p>
+              <p className="font-medium">{items.requesterName}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Drop Location</p>
+              <p className="font-medium">{items.location}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Type of Chicks</p>
+              <p className="font-medium">{items.chicksType}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Number of Requester</p>
+              <p className="font-medium">{items.numberofrequester} persons</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Quantity</p>
+              <p className="font-medium">{items.quantity} chicks</p>
+            </div>
+
+            <div>
+              <p className="text-gray-600 text-sm">Requested Date</p>
+              <p className="font-medium">{items.createdAt}</p>
+            </div>
+
             <div>
               <p className="text-gray-600 text-sm">Status</p>
               <span className="inline-flex px-2 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
                 {items.status}
               </span>
             </div>
-
-            <div>
-              <p className="text-gray-600 text-sm">Type of Chicks</p>
-              <p className="font-medium">{items.typeOfChicks}</p>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">Quantity</p>
-              <p className="font-medium">{items.quantityOfChicks} chicks</p>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">Number of Persons</p>
-              <p className="font-medium">{items.numberOfPerson} persons</p>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">Requested Date</p>
-              <p className="font-medium">{items.requestedDate}</p>
-            </div>
           </div>
           <div className="mt-4">
             <p className="text-gray-600 text-sm">Description</p>
-            <p className="font-medium">{items.requestDescription}</p>
+            <p className="font-medium">{items.description}</p>
+          </div>
+          <div className="mt-4">
+            <p className="text-gray-600 text-sm">Description</p>
+            <img
+              src={items.file}
+              alt="File Description"
+              className="mt-2 w-full max-w-sm object-cover rounded"
+            />
           </div>
         </div>
       </div>
