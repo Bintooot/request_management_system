@@ -128,7 +128,7 @@ const CreateRequest = () => {
               </div>
               {item < 4 && (
                 <div
-                  className={`h-1 w-24 ${
+                  className={`h-1 w-10 ${
                     step > item ? "bg-green-600" : "bg-gray-200"
                   }`}
                 />
@@ -156,8 +156,12 @@ const CreateRequest = () => {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Personal Information</h2>
-            <div className="grid grid-cols-3  gap-6">
+            <h2 className="text-xl font-bold mb-6 sm:text-2xl">
+              Personal Information
+            </h2>
+
+            {/* Responsive Grid */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   ID
@@ -192,11 +196,12 @@ const CreateRequest = () => {
                 />
               </div>
             </div>
+
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+                className="bg-green-600 text-sm text-white px-6 py-2 rounded-md hover:bg-green-700"
               >
                 Next
               </button>
@@ -210,8 +215,12 @@ const CreateRequest = () => {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Request Details</h2>
-            <div className="grid grid-cols-3 gap-6">
+            <h2 className="text-xl font-bold mb-6 sm:text-2xl">
+              Request Details
+            </h2>
+
+            {/* Responsive Grid */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Type of Chicks
@@ -220,7 +229,7 @@ const CreateRequest = () => {
                   name="chicksType"
                   value={chicksType}
                   onChange={(e) => setChicksType(e.target.value)}
-                  className="mt-1 border-2 block  p-1 w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 >
                   <option value="" disabled>
                     Select Type
@@ -229,6 +238,7 @@ const CreateRequest = () => {
                   <option value="Broiler">Broiler</option>
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Number of Persons
@@ -242,6 +252,7 @@ const CreateRequest = () => {
                   className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Quantity
@@ -256,7 +267,8 @@ const CreateRequest = () => {
                 />
               </div>
 
-              <div className="col-span-3">
+              {/* Full-Width Fields */}
+              <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">
                   Description
                 </label>
@@ -268,7 +280,8 @@ const CreateRequest = () => {
                   className="mt-1 p-2 border-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
-              <div className="col-span-3">
+
+              <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">
                   File or Letter
                 </label>
@@ -280,6 +293,8 @@ const CreateRequest = () => {
                 />
               </div>
             </div>
+
+            {/* Navigation Buttons */}
             <div className="flex justify-between">
               <button
                 type="button"
@@ -346,23 +361,24 @@ const CreateRequest = () => {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
-            <h2 className="text-2xl font-bold mb-6">
-              Confirmation <br />{" "}
+            <h2 className="text-xl font-bold mb-6 sm:text-2xl">
+              Confirmation <br />
               <span className="text-sm text-red-500 font-normal">
                 Review your request before submitting
               </span>
             </h2>
 
+            {/* Review Details */}
             <div className="space-y-4 mb-6">
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Requester No:</span>
-                <span>{requesterid}</span>
+                <span className="text-right">{requesterid}</span>
               </div>
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Requester:</span>
-                <span>{requesterName}</span>
+                <span className="text-right">{requesterName}</span>
               </div>
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Location:</span>
                 <input
                   id="location"
@@ -370,11 +386,10 @@ const CreateRequest = () => {
                   name="location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="text-right border-none"
+                  className="text-right border-none focus:outline-none"
                 />
               </div>
-
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Status:</span>
                 <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
                   Pending
@@ -382,17 +397,18 @@ const CreateRequest = () => {
               </div>
             </div>
 
+            {/* Requested Items */}
             <div className="space-y-4 mb-6">
-              <h3 className="text-2xl font-semibold mb-6">
-                Requested Items/Services <br />
+              <h3 className="text-xl font-semibold mb-4 sm:text-2xl">
+                Requested Items/Services
               </h3>
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Chicks Type:</span>
                 <select
                   name="chicksType"
                   value={chicksType}
                   onChange={(e) => setChicksType(e.target.value)}
-                  className="text-right border-none"
+                  className="text-right border-none focus:outline-none"
                 >
                   <option value="" disabled>
                     Select Type
@@ -401,7 +417,7 @@ const CreateRequest = () => {
                   <option value="Broiler">Broiler</option>
                 </select>
               </div>
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Persons:</span>
                 <input
                   required
@@ -409,10 +425,10 @@ const CreateRequest = () => {
                   name="persons"
                   value={numberofrequester}
                   onChange={(e) => setNUmberofRequester(e.target.value)}
-                  className="text-right border-none appearance-none"
+                  className="text-right border-none appearance-none focus:outline-none"
                 />
               </div>
-              <div className="flex justify-between border-b pb-2">
+              <div className="flex flex-wrap justify-between border-b pb-2">
                 <span className="text-gray-600">Quantity:</span>
                 <input
                   required
@@ -420,14 +436,14 @@ const CreateRequest = () => {
                   name="quantity"
                   value={quantity}
                   readOnly
-                  className="text-right border-none appearance-none"
+                  className="text-right border-none appearance-none focus:outline-none"
                 />
               </div>
             </div>
 
+            {/* Description */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Description</h3>
-
               <textarea
                 name="description"
                 required
@@ -438,13 +454,20 @@ const CreateRequest = () => {
               />
             </div>
 
-            <div className="mb-6 ">
-              <h3 className="text-lg font-semibold  mb-2">Selected File</h3>
-              <div className="flex justify-between">
-                {fileName}
-                <input type="file" required onChange={handleFileChange} />
+            {/* File Upload */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Selected File</h3>
+              <div className="flex flex-wrap justify-between items-center">
+                <span className="truncate">{fileName}</span>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="text-sm"
+                />
               </div>
             </div>
+
+            {/* Navigation Buttons */}
             <div className="flex justify-between">
               <button
                 type="button"

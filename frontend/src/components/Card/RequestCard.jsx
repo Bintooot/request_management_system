@@ -8,9 +8,9 @@ const RequestCard = ({ items }) => {
           Current Request Details
         </h1>
         <div className="p-4">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <p className="text-gray-600 text-sm">Request ID</p>
+              <p className="text-gray-600 text-sm">Request No</p>
               <p className="font-medium"> {items.requestId}</p>
             </div>
             <div>

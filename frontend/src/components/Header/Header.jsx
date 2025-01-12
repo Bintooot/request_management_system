@@ -4,7 +4,7 @@ import { FaUser } from "react-icons/fa";
 import Banner from "../Banner/Logo";
 import { GiHamburgerMenu } from "react-icons/gi";
 
-const Header = ({ togglehandler, username }) => {
+const Header = ({ toggleHandler, username }) => {
   return (
     <>
       <div className="flex justify-between px-5 items-center border-b shadow-lg bg-slate-300 grow h-20 sticky top-0">
@@ -12,7 +12,7 @@ const Header = ({ togglehandler, username }) => {
           <GiHamburgerMenu
             fontSize={30}
             cursor="pointer"
-            onClick={togglehandler}
+            onClick={toggleHandler}
             className="md:hidden"
           />
           <Banner />
@@ -23,7 +23,7 @@ const Header = ({ togglehandler, username }) => {
           </div>
           <div className="p-2 cursor-pointer flex gap-3 items-center md:text-sm sm:text-sm">
             <FaUser fontSize={20} />
-            <p>{username} </p>
+            <p className="md:block hidden">{username} </p>
           </div>
         </div>
       </div>

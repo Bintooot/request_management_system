@@ -18,7 +18,7 @@ const RequestRecords = () => {
       fileAttached: "file1.pdf",
     },
     {
-      id: 1,
+      id: 2,
       requestId: "123s#s",
       userName: "John Doe",
       reviewedBy: "Jane Doe",
@@ -32,7 +32,7 @@ const RequestRecords = () => {
       fileAttached: "file1.pdf",
     },
     {
-      id: 1,
+      id: 3,
       requestId: "asda2sd4",
       userName: "John Doe",
       reviewedBy: "Jane Doe",
@@ -46,7 +46,7 @@ const RequestRecords = () => {
       fileAttached: "file1.pdf",
     },
     {
-      id: 1,
+      id: 4,
       requestId: "asda2sd4",
       userName: "John Doe",
       reviewedBy: "Jane Doe",
@@ -60,7 +60,7 @@ const RequestRecords = () => {
       fileAttached: "file1.pdf",
     },
     {
-      id: 1,
+      id: 5,
       requestId: "asda2sd4ss",
       userName: "John Doe",
       reviewedBy: "Jane Doe",
@@ -88,7 +88,8 @@ const RequestRecords = () => {
   };
 
   return (
-    <main className="flex jsustify-center flex-col ">
+    <main className="flex justify-center flex-col p-4 sm:p-8">
+      {/* Requests Section */}
       <div className="flex flex-col items-center h-96 border-b-2 overflow-auto">
         {requestData?.length > 0 ? (
           requestData.map((item) => (
@@ -98,10 +99,12 @@ const RequestRecords = () => {
           <div className="text-center p-4 text-gray-500">No requests found</div>
         )}
       </div>
+
+      {/* Request History Section */}
       <div className="my-4">
-        <h1 className="text-2xl font-semibold">Request History</h1>
-        <div className="flex  gap-2 justify-end ">
-          <select className=" w-48 p-2 border shadow-sm">
+        <h1 className="text-xl font-semibold sm:text-2xl">Request History</h1>
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
+          <select className="w-full sm:w-48 p-2 border shadow-sm">
             <option value="" disabled selected>
               Filter Status
             </option>
@@ -112,14 +115,16 @@ const RequestRecords = () => {
           <input
             type="text"
             placeholder="Search by Name or ID"
-            className="w-64 p-2 border shadow-sm"
+            className="w-full sm:w-64 p-2 border shadow-sm"
           />
         </div>
-        <div className="max-h-56 my-2 overflow-auto border-2">
+
+        {/* History Table */}
+        <div className="max-h-56 my-2 overflow-auto border-2 rounded-md">
           <div className="h-full">
             <table className="w-full text-center">
               <thead className="sticky top-0 bg-slate-200">
-                <tr className="font-semibold ">
+                <tr className="font-semibold text-xs sm:text-sm">
                   <th className="border-b p-2">ID</th>
                   <th className="border-b p-2">Request ID</th>
                   <th className="border-b p-2">User</th>
@@ -134,7 +139,7 @@ const RequestRecords = () => {
               </thead>
               <tbody>
                 {requestData.map((items) => (
-                  <tr key={items.id} className="text-xs">
+                  <tr key={items.id} className="text-xs sm:text-sm">
                     <td className="border-b p-3">{items.id}</td>
                     <td className="border-b p-3">{items.requestId}</td>
                     <td className="border-b p-3">{items.userName}</td>
@@ -162,7 +167,7 @@ const RequestRecords = () => {
                           handleSelectedRequest(items);
                           handleOpen();
                         }}
-                        className="bg-green-900 text-sx text-white p-1 rounded"
+                        className="bg-green-900 text-xs text-white p-1 rounded hover:bg-green-700"
                       >
                         Details
                       </button>
@@ -175,6 +180,7 @@ const RequestRecords = () => {
         </div>
       </div>
 
+      {/* Modal Section */}
       <div>
         {selectedRequest && (
           <CustomModal open={openModal} handleClose={handleClose}></CustomModal>

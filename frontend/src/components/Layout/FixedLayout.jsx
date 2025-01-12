@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Header from "../Header/Header";
-import Sidebar from "../../components/Navigation/FixedSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
+import FixedSidebar from "../../components/Navigation/FixedSidebar";
 
 const FixedLayout = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +13,7 @@ const FixedLayout = () => {
 
   const toggleHandler = () => {
     setIsOpen(!isOpen);
+    console.log(isOpen);
   };
 
   useEffect(() => {
@@ -57,14 +58,16 @@ const FixedLayout = () => {
         toggleHandler={toggleHandler}
         username={user?.username || "Guest"}
       />
+
       {isOpen && (
         <div className="fixed inset-0 top-20 bg-green-900 bg-opacity-100 z-50">
-          <Sidebar />
+          <FixedSidebar closeSidebar={() => setIsOpen(false)} />
         </div>
       )}
+
       <div className="flex min-h-screen">
         <aside className="bg-green-900 max-w-60 w-full md:block hidden">
-          <Sidebar />
+          <FixedSidebar closeSidebar={() => setIsOpen(false)} />
         </aside>
         <main className="max-w-full w-full p-2">
           <Outlet context={{ user }} />
