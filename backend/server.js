@@ -10,6 +10,7 @@ import RegisterRoute from "./routes/RegisterRoute.js";
 import LoginRoute from "./routes/LoginRoute.js";
 import ProfileRoute from "./routes/profileRoute.js";
 import UpdateAccoutRoute from "./routes/UpdateAccountRoute.js";
+import CreateRequestRoute from "./routes/CreateRequestRoute.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/registerAccount", RegisterRoute);
 app.use("/api/loginAccount", LoginRoute);
 app.use("/api/user-dashboard", ProfileRoute);
 app.use("/api/updateAccount", UpdateAccoutRoute);
+app.use("/api/submit-request", CreateRequestRoute);
 
 const PORT = process.env.PORT || 5000;
 
