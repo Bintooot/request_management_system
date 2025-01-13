@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react";
 import CustomModal from "../../components/Modal/CustomModal";
 import RequestCard from "../../components/Card/RequestCard";
 import axios from "axios";
+import Notification from "../../components/Notification/Notification";
 
 const RequestRecords = () => {
   const [userRequests, setUserRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState(""); // 'success' or 'error'
 
   //Open Modal
   const [openModal, setOpenModal] = useState(false);
@@ -17,6 +21,16 @@ const RequestRecords = () => {
 
   const handleSelectedRequest = (items) => {
     setSelectedReqest(items);
+  };
+
+  const showNotification = (message, type = "success") => {
+    setStatusMessage(message); // Set the notification message
+    setStatusType(type); // Set the notification type ("success" or "error")
+    setNotificationVisible(true); // Make the notification visible
+
+    setTimeout(() => {
+      setNotificationVisible(false); // Hide the notification after 5 seconds
+    }, 5000);
   };
 
   useEffect(() => {
@@ -49,16 +63,40 @@ const RequestRecords = () => {
     fetchUserRequests();
   }, []); // Empty array ensures this only runs on component mount
 
+  // deleting item
+  const deleteRequest = async (requestId) => {
+    try {
+      console.log(requestId);
+      await axios.delete(`/api/cancel-request/${requestId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      setUserRequests((prevRequests) =>
+        prevRequests.filter((request) => request._id !== requestId)
+      );
+
+      showNotification("Request successfully cancel!", "success");
+    } catch (error) {
+      showNotification("Request failed to cancel!", "failed");
+      console.error("Error deleting request:", error);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
 
   return (
     <main className="flex justify-center flex-col p-4 sm:p-8">
+      {notificationVisible && (
+        <Notification message={statusMessage} type={statusType} />
+      )}
       <div className="flex flex-col items-center h-96 border-b-2 overflow-auto">
         {loading ? (
           <div className="text-center p-4">Loading requests...</div>
         ) : userRequests?.length > 0 ? (
           userRequests.map((item) => (
-            <RequestCard key={item._id} items={item} />
+            <RequestCard key={item._id} items={item} onClick={deleteRequest} />
           ))
         ) : (
           <div className="text-center p-4 text-gray-500">No requests found</div>

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CardMenu from "../../components/Card/CardMenu";
 import { useOutletContext } from "react-router-dom";
-
+import axios from "axios";
 import {
   RiMailSendLine,
   RiTimeLine,
@@ -19,6 +19,7 @@ import {
 
 const Dashboard = () => {
   const { user } = useOutletContext() || { user: null };
+  const [requestCount, setRequestCount] = useState(0);
 
   if (!user) {
     return (
@@ -44,6 +45,23 @@ const Dashboard = () => {
     { id: 3, type: "Transcript", status: "In Progress", date: "2024-03-18" },
   ];
 
+  useEffect(() => {
+    const fetchRequestCount = async () => {
+      try {
+        const response = await axios.get("/api/total-pending-request", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        setRequestCount(response.data.requestCount);
+      } catch (error) {
+        console.error("Error fetching request count:", error);
+      }
+    };
+
+    fetchRequestCount();
+  }, []);
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Welcome Section */}
@@ -60,7 +78,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 m-6">
         <CardMenu
           title="Pending Requests"
-          number="5"
+          number={requestCount}
           icon={<RiTimeLine className="text-white" />}
           className="bg-orange-50"
         />
