@@ -21,16 +21,13 @@ export const registerUser = async (req, res) => {
         .json({ message: "The email you entered is already registered." });
     }
 
-    // Hash the password before saving it to the database
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create a new user object
     const newUser = new User({
       accountid,
       username,
       email,
       contactnumber,
-      password: hashedPassword, // Use hashed password
+      password, // Use hashed password
       position,
       address,
     });
