@@ -14,6 +14,8 @@ import CreateRequestRoute from "./routes/CreateRequestRoute.js";
 import GetUserRequest from "./routes/GetUserRequest.js";
 import CancelRequestRoute from "./routes/CancelRequestRoute.js";
 import TotalPendingRequestRoute from "./routes/TotalPendingRequestRoute.js";
+import CreateInquiryRoute from "./routes/CreateInquiryRoute.js";
+
 const app = express();
 
 app.use(cors());
@@ -36,7 +38,8 @@ app.use("/api/updateAccount", UpdateAccoutRoute); // Update the Profile
 app.use("/api/submit-request", CreateRequestRoute); // submit request
 app.use("/api/getuser-request", GetUserRequest); // fetching the data of a specific user that whos been currently login
 app.use("/api/cancel-request", CancelRequestRoute); //cancel the current request
-app.use("/api/total-pending-request", TotalPendingRequestRoute);
+app.use("/api/total-pending-request", TotalPendingRequestRoute); // Counting the total Request
+app.use("/api/submit-inquiry", CreateInquiryRoute); // Submit Inquiry
 
 const PORT = process.env.PORT || 5000;
 
