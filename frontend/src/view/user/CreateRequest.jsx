@@ -26,12 +26,21 @@ const CreateRequest = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
 
-  useEffect(() => {
-    if (user?.accountid && user?.username) {
-      setRequesterid(user.accountid);
-      setRequesterName(user.username);
-    }
-  }, [user]); // Runs when `user` changes
+  useEffect(
+    () => {
+      if (user?.accountid && user?.username) {
+        setRequesterid(user.accountid);
+        setRequesterName(user.username);
+      }
+
+      if (numberofrequester !== "") {
+        const totalChicks = chicksQuantity(numberofrequester);
+        setQuantity(totalChicks);
+      }
+    },
+    [user],
+    [numberofrequester]
+  ); // Runs when `user` changes
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -43,12 +52,7 @@ const CreateRequest = () => {
     return numberofrequester * 3;
   };
 
-  useEffect(() => {
-    if (numberofrequester !== "") {
-      const totalChicks = chicksQuantity(numberofrequester);
-      setQuantity(totalChicks);
-    }
-  }, [numberofrequester]);
+  useEffect(() => {});
 
   const resetForm = () => {
     // Reset all the state to initial values

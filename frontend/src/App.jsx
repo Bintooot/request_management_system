@@ -12,7 +12,7 @@ import Accounts from "./view/admin/Accounts";
 import Index from "./view/landingpage";
 import Userdashboard from "./view/user/Dashboard";
 import CrateRequest from "./view/user/CreateRequest";
-import Inqure from "./view/user/Inqure";
+import Inquire from "./view/user/Inquire";
 import Profile from "./view/user/Profile";
 import RequestRecord from "./view/user/RequestRecords";
 import FixedLayout from "./components/Layout/FixedLayout";
@@ -51,7 +51,7 @@ function App() {
           <Route element={<FixedLayout />}>
             <Route path="/user-dashboard" element={<Userdashboard />} />
             <Route path="/create-request" element={<CrateRequest />} />
-            <Route path="/inqure" element={<Inqure />} />
+            <Route path="/inqure" element={<Inquire />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/request-record" element={<RequestRecord />} />
           </Route>

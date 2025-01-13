@@ -1,16 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
-const Inqure = () => {
-  const [inquiry, setInquiry] = useState({
-    subject: "",
-    message: "",
-    attachment: null,
-  });
+const Inquire = () => {
+  const { user } = useOutletContext() || { user: null };
+
+  // Requester Data info
+  const [requesterid, setRequesterid] = useState("");
+  const [requesterName, setRequesterName] = useState("");
+
+  useEffect(() => {
+    if (user?.accountid && user?.username) {
+      setRequesterid(user.accountid);
+      setRequesterName(user.username);
+    }
+  }, [user]); // Runs when `user` changes
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(inquiry);
   };
 
   return (
@@ -31,10 +37,6 @@ const Inqure = () => {
             id="subject"
             required
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
-            value={inquiry.subject}
-            onChange={(e) =>
-              setInquiry({ ...inquiry, subject: e.target.value })
-            }
           />
         </div>
 
@@ -49,12 +51,7 @@ const Inqure = () => {
             required
             id="message"
             name="message"
-            rows={6}
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
-            value={inquiry.message}
-            onChange={(e) =>
-              setInquiry({ ...inquiry, message: e.target.value })
-            }
           />
         </div>
 
@@ -62,13 +59,7 @@ const Inqure = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Attachment (optional)
           </label>
-          <input
-            type="file"
-            className="w-full p-2 border rounded-md"
-            onChange={(e) =>
-              setInquiry({ ...inquiry, attachment: e.target.files[0] })
-            }
-          />
+          <input type="file" className="w-full p-2 border rounded-md" />
         </div>
 
         <button
@@ -105,4 +96,4 @@ const Inqure = () => {
   );
 };
 
-export default Inqure;
+export default Inquire;
