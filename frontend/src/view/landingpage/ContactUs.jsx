@@ -1,13 +1,30 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Notification from "../../components/Notification/Notification";
 
 const ContactUs = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success"); // default is "success"
+
+  const showNotification = (message, type = "success") => {
+    setStatusMessage(message); // Set the notification message
+    setStatusType(type); // Set the notification type ("success" or "error")
+    setNotificationVisible(true); // Make the notification visible
+
+    setTimeout(() => {
+      setNotificationVisible(false); // Hide the notification after 5 seconds
+    }, 5000);
+  };
+
+  const resetForm = () => {
+    setName(""), setEmail(""), setSubject(""), setMessage("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,11 +43,10 @@ const ContactUs = () => {
         contactUsData
       );
 
-      if (response.status === 201) {
-        setStatusMessage("Your message has been sent successfully!");
-      }
+      showNotification("Request successfully submitted!", "success");
+      resetForm();
     } catch (error) {
-      setStatusMessage("Error sending your message. Please try again.");
+      showNotification("Fill in all the necessary fields.", "error");
       console.error("Error:", error);
     } finally {
       setLoading(false);
@@ -45,6 +61,13 @@ const ContactUs = () => {
           <p className="text-xl">Get in touch with our team</p>
         </div>
       </section>
+
+      {notificationVisible && (
+        <Notification
+          message={statusMessage} // Pass the message to display
+          type={statusType} // Pass the type of notification (success or error)
+        />
+      )}
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 gap-8">
@@ -106,18 +129,6 @@ const ContactUs = () => {
                 {loading ? "Sending..." : "Send Message"}
               </button>
             </form>
-
-            {statusMessage && (
-              <p
-                className={`mt-4 text-lg font-semibold ${
-                  statusMessage.includes("success")
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {statusMessage}
-              </p>
-            )}
           </div>
 
           <div className="space-y-8">
