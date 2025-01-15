@@ -1,6 +1,9 @@
 import express from "express";
 import { verifyToken, isUser } from "../middleware/authMiddleware.js";
+import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
+import Request from "../models/Request.js";
+import generateRequestNo from "../utils/RandomNumber.js";
 
 const router = express.Router();
 
@@ -30,6 +33,7 @@ router.get("/profile", verifyToken, isUser, async (req, res) => {
   }
 });
 
+// Update profile of the user
 router.put("/update-profile/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -52,4 +56,51 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post(
+  "/submit-request",
+  fileMiddleware.single("file"), // Make sure this is set up correctly in the middleware
+  async (req, res) => {
+    const {
+      requesterid,
+      requesterName,
+      chicksType,
+      location,
+      numberofrequester,
+      description,
+      quantity,
+    } = req.body;
+
+    console.log(req.body); // Log the received body
+
+    try {
+      // Handle file upload if exists
+      const file = req.file ? req.file.path : null;
+      const generatedRequestNo = generateRequestNo(); // Call the f
+
+      const newRequest = new Request({
+        generatedRequestNo,
+        requesterid,
+        requesterName,
+        chicksType,
+        location,
+        numberofrequester,
+        description,
+        quantity,
+        file,
+      });
+
+      await newRequest.save();
+      res
+        .status(200)
+        .json({ message: "Request submitted successfully", data: newRequest });
+    } catch (error) {
+      console.error("Error submitting request:", error);
+      res
+        .status(500)
+        .json({ message: "Error submitting request", error: error.message });
+    }
+  }
+);
+
 export default router;

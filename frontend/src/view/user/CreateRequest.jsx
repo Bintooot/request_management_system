@@ -12,6 +12,7 @@ const CreateRequest = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("success"); // default is "success"
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Requester Data info
   const [requesterid, setRequesterid] = useState("");
@@ -25,6 +26,18 @@ const CreateRequest = () => {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
+
+  console.log({
+    requesterid,
+    requesterName,
+    chicksType,
+    location,
+    quantity,
+    numberofrequester,
+    description,
+    file,
+    fileName,
+  });
 
   useEffect(() => {
     if (user?.accountid && user?.username) {
@@ -73,9 +86,27 @@ const CreateRequest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setValidationErrors({}); // Clear any previous validation errors
+
+    // Check for required fields
+    const errors = {};
+    if (!chicksType) errors.chicksType = "Chicks type is required";
+    if (!location) errors.location = "Location is required";
+    if (!numberofrequester)
+      errors.numberofrequester = "Number of persons is required";
+    if (!description) errors.description = "Description is required";
+    if (!file) errors.file = "File is required";
+
+    // If there are any validation errors, show them and stop the submission
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setLoading(false);
+      showNotification("Please fill in all the required fields.", "error");
+      return;
+    }
 
     const formData = new FormData();
-    formData.append("requesterid", user._id);
+    formData.append("requesterid", requesterid);
     formData.append("requesterName", requesterName);
     formData.append("chicksType", chicksType);
     formData.append("location", location);
@@ -83,9 +114,10 @@ const CreateRequest = () => {
     formData.append("description", description);
     formData.append("quantity", quantity);
     if (file) formData.append("file", file); // Attach the file if selected
+
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/submit-request",
+        "http://localhost:5000/api/user/submit-request",
         formData,
         {
           headers: {
@@ -93,9 +125,9 @@ const CreateRequest = () => {
           },
         }
       );
+
       setLoading(false);
       showNotification("Request successfully submitted!", "success");
-      console.log("Request created:", response.data);
       resetForm();
     } catch (error) {
       setLoading(false);
@@ -141,6 +173,12 @@ const CreateRequest = () => {
           message={statusMessage} // Pass the message to display
           type={statusType} // Pass the type of notification (success or error)
         />
+      )}
+
+      {validationErrors.chicksType && (
+        <div className="text-red-500 text-sm">
+          {validationErrors.chicksType}
+        </div>
       )}
 
       <form
@@ -229,9 +267,6 @@ const CreateRequest = () => {
                   onChange={(e) => setChicksType(e.target.value)}
                   className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 >
-                  <option value="" disabled>
-                    Select Type
-                  </option>
                   <option value="Mix">Mix</option>
                   <option value="Broiler">Broiler</option>
                 </select>
@@ -458,7 +493,6 @@ const CreateRequest = () => {
               <div className="flex flex-wrap justify-between items-center">
                 <span className="truncate">{fileName}</span>
                 <input
-                  required
                   type="file"
                   onChange={handleFileChange}
                   className="text-sm"
