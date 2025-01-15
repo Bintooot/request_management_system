@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Notification from "../Notification/Notification";
 
 const SignUp = () => {
@@ -12,12 +11,16 @@ const SignUp = () => {
     password: "",
     position: "",
     address: "",
+    role: "user",
+    secretKey: "",
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("success"); // default is "success"
 
+  // Notification to show success or error messages
   const showNotification = (message, type = "success") => {
     setStatusMessage(message); // Set the notification message
     setStatusType(type); // Set the notification type ("success" or "error")
@@ -28,14 +31,14 @@ const SignUp = () => {
     }, 5000);
   };
 
+  // Generate unique account ID
   const generateID = () => {
     return Math.floor(Math.random() * 100000000)
       .toString()
       .padStart(8, "0");
   };
 
-  const navigate = useNavigate();
-
+  // Input change handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -44,26 +47,44 @@ const SignUp = () => {
     }));
   };
 
+  // Email validation regex
+  const validateEmail = (email) => {
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+    return emailRegex.test(email);
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Email validation
+    if (!validateEmail(formData.email)) {
+      showNotification("Please enter a valid email address.", "error");
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Prepare user account data
       const userAccount = {
         ...formData,
         accountid: generateID(),
       };
 
+      // Send request to register the user
       const response = await axios.post(
-        "http://localhost:5000/api/registerAccount",
+        "http://localhost:5000/api/auth/register",
         userAccount
       );
 
       console.log("Response from server:", response);
-      showNotification("Regestration succesfully!", "success");
+      showNotification("Registration successfully!", "success");
+      alert(response.data.message);
     } catch (error) {
-      showNotification("Registration failed.", "error");
+      // Handle errors
+      showNotification("The email you entered is already registered.", "error");
       console.error("Registration error:", error);
+      alert(error.response?.data?.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -74,14 +95,49 @@ const SignUp = () => {
       <h2 className="text-3xl font-semibold text-center text-gray-900 mb-6">
         Sign Up
       </h2>
+
+      {/* Notification */}
       {notificationVisible && (
         <Notification
           message={statusMessage} // Pass the message to display
           type={statusType} // Pass the type of notification (success or error)
         />
       )}
+
       <form className="space-y-6" onSubmit={handleSubmit}>
-        {/* Full Name Input */}
+        {/* Role Selection */}
+        <div>
+          <label
+            htmlFor="role"
+            className="block text-sm font-medium text-gray-900"
+          >
+            Select Role
+          </label>
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+            required
+            className="mt-2 w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-green-600 focus:outline-none"
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          {formData.role === "admin" && (
+            <input
+              type="password"
+              name="secretKey"
+              placeholder="Enter Admin Secret Key"
+              value={formData.secretKey}
+              onChange={handleInputChange}
+              required
+              className="mt-2 w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-green-600 focus:outline-none"
+            />
+          )}
+        </div>
+
+        {/* Username Input */}
         <div>
           <label
             htmlFor="username"

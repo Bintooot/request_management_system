@@ -2,11 +2,36 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const Notification = ({ message, type }) => {
+  const notificationStyle = type === "success" ? "bg-green-500" : "bg-red-500";
+  return (
+    <div
+      className={`p-4 rounded-lg text-white ${notificationStyle} mb-4`}
+      role="alert"
+    >
+      {message}
+    </div>
+  );
+};
+
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success"); // default is "success"
   const navigate = useNavigate();
+
+  const showNotification = (message, type = "success") => {
+    setStatusMessage(message); // Set the notification message
+    setStatusType(type); // Set the notification type ("success" or "error")
+    setNotificationVisible(true); // Make the notification visible
+
+    setTimeout(() => {
+      setNotificationVisible(false); // Hide the notification after 5 seconds
+    }, 5000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,20 +40,30 @@ const SignIn = () => {
       const loginAccount = { email, password };
 
       const response = await axios.post(
-        "http://localhost:5000/api/loginAccount",
+        "http://localhost:5000/api/auth/login",
         loginAccount
       );
 
-      const { token } = response.data;
-      localStorage.setItem("authToken", token); // Save token in local storage
-      alert("Login successful!");
-      navigate("/user-dashboard"); // Redirect to dashboard
+      const { token, expirationTime } = response.data;
+
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("tokenExpirationTime", expirationTime);
+
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+      if (decodedToken.role === "admin") {
+        showNotification("Admin login successful!", "success");
+        navigate("/admin-dashboard");
+      } else {
+        showNotification("User login successful!", "success");
+        navigate("/user-dashboard");
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Login failed. Please try again.";
-      alert(errorMessage);
+      showNotification(errorMessage, "error");
       console.error("Login error:", error);
     } finally {
       setIsLoading(false);
@@ -40,6 +75,9 @@ const SignIn = () => {
       <h2 className="text-3xl font-semibold text-center text-gray-900 mb-6">
         Sign In
       </h2>
+      {notificationVisible && (
+        <Notification message={statusMessage} type={statusType} />
+      )}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <label

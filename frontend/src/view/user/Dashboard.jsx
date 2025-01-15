@@ -45,23 +45,6 @@ const Dashboard = () => {
     { id: 3, type: "Transcript", status: "In Progress", date: "2024-03-18" },
   ];
 
-  useEffect(() => {
-    const fetchRequestCount = async () => {
-      try {
-        const response = await axios.get("/api/total-pending-request", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        setRequestCount(response.data.requestCount);
-      } catch (error) {
-        console.error("Error fetching request count:", error);
-      }
-    };
-
-    fetchRequestCount();
-  }, []);
-
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Welcome Section */}

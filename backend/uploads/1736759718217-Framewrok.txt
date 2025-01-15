@@ -1,0 +1,37 @@
+General Objectives: 
+==================================
+Clarity: The general objective is clear and concise, emphasizing automation and intelligence, which are critical for modern agricultural practices.
+Relevance: This objective addresses the needs of small-scale farmers, who often require efficient and user-friendly solutions to enhance productivity.
+Impact: By focusing on mobile monitoring and reducing human intervention, the incubator can significantly improve operational efficiency and hatch rates, ultimately benefiting small-scale farmers economically.
+
+Specific Objectives:
+====================================
+1. Hardware Development with Sensors:
+
+Analysis:
+Technical Feasibility: Utilizing sensors is a standard practice in incubator design, making this objective feasible.
+User Engagement: The mobile app component enhances user engagement and allows for real-time monitoring, which is crucial for timely interventions.
+
+2. Integration of Servo Motor for Egg Tilting:
+
+Analysis:
+Importance: Regular tilting of eggs is essential for embryo development, making this objective vital for improving hatch rates.
+Innovation: The use of a servo motor adds a level of precision and automation that can minimize human error.
+
+3. PWM DC Fan for Airflow Control
+
+Analysis:s
+Efficiency: PWM (Pulse Width Modulation) technology allows for energy-efficient operation, which is beneficial for small-scale farmers.
+Environmental Control: Maintaining optimal conditions is critical for embryo health, making this objective highly relevant.
+
+4. Ventilator Control for Air Quality
+
+Analysis:
+Health and Safety: Ensuring good air quality is essential for preventing disease and promoting healthy development of embryos.
+Simplicity: The focus on easy control suggests a user-friendly design, which is important for farmers who may not have technical expertise.
+
+5. Enhancing Embryo Development and Hatch Rates
+
+Analysis:
+End Goal: This objective encapsulates the ultimate aim of the incubator project, which is to enhance productivity and profitability for farmers.
+Measurable Outcome: Success can be quantitatively assessed through hatch rates, providing clear metrics for evaluating the incubator's effectiveness.

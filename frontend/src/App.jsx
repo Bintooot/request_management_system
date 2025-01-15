@@ -22,12 +22,14 @@ import AboutUs from "./view/landingpage/AboutUs";
 import ContactUs from "./view/landingpage/ContactUs";
 import LandingPageLayout from "./components/Layout/LandingPageLayout";
 
+import ProtectedRoute from "./components/ProtectedPage/ProtectedRoute"; // Import ProtectedRoute
+
 function App() {
   return (
     <Router>
       <div>
         <Routes>
-          {/* Landing Page */}
+          {/* Landing Page Routes */}
           <Route element={<LandingPageLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/contact-us" element={<ContactUs />} />
@@ -36,25 +38,111 @@ function App() {
             <Route path="/register" element={<Register />} />
           </Route>
 
-          {/* Admin Side */}
+          {/* Admin Routes (Protected) */}
           <Route element={<AdminLayout />}>
-            <Route path="/admin-dashboard" element={<Dashboard />} />
-            <Route path="/request-pending" element={<RequestPending />} />
-            <Route path="/approved-request" element={<ApprovedRequest />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/user-account" element={<UserAccount />} />
-            <Route path="/admin-account" element={<AdminAccount />} />
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedRoute role="admin">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/request-pending"
+              element={
+                <ProtectedRoute role="admin">
+                  <RequestPending />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/approved-request"
+              element={
+                <ProtectedRoute role="admin">
+                  <ApprovedRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute role="admin">
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                <ProtectedRoute role="admin">
+                  <Accounts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user-account"
+              element={
+                <ProtectedRoute role="admin">
+                  <UserAccount />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-account"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminAccount />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
-          {/* User Side */}
+          {/* User Routes (Protected) */}
           <Route element={<FixedLayout />}>
-            <Route path="/user-dashboard" element={<Userdashboard />} />
-            <Route path="/create-request" element={<CrateRequest />} />
-            <Route path="/inqure" element={<Inquire />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/request-record" element={<RequestRecord />} />
+            <Route
+              path="/user-dashboard"
+              element={
+                <ProtectedRoute role="user">
+                  <Userdashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-request"
+              element={
+                <ProtectedRoute role="user">
+                  <CrateRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inqure"
+              element={
+                <ProtectedRoute role="user">
+                  <Inquire />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute role="user">
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/request-record"
+              element={
+                <ProtectedRoute role="user">
+                  <RequestRecord />
+                </ProtectedRoute>
+              }
+            />
           </Route>
+
+          {/* Catch-All Route (Page Not Found) */}
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </div>

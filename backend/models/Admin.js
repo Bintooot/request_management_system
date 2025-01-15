@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// User schema
-const userSchema = new mongoose.Schema(
+// Admin schema (similar to User schema)
+const adminSchema = new mongoose.Schema(
   {
     accountid: {
       type: String,
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "admin"],
-      default: "user",
+      default: "admin",
     },
   },
   {
@@ -45,17 +45,17 @@ const userSchema = new mongoose.Schema(
 );
 
 // Password hashing
-userSchema.pre("save", async function (next) {
+adminSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
 // Password comparison method
-userSchema.methods.comparePassword = async function (password) {
+adminSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+const Admin = mongoose.model("Admin", adminSchema);
 
-export default User;
+export default Admin;

@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+
 const Profile = () => {
-  const { user } = useOutletContext() || { user: null };
+  const { user, setUser, fetchUser } = useOutletContext() || {
+    user: null,
+    setUser: null,
+    fetchUser: null,
+  };
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [contactnumber, setContactNumber] = useState("");
+  const [formData, setFormData] = useState({
+    email: user?.email || "",
+    address: user?.address || "",
+    contactnumber: user?.contactnumber || "",
+  });
 
   if (!user) {
     return (
@@ -18,50 +25,43 @@ const Profile = () => {
     );
   }
 
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate fields
-    if (!email && !address && !contactnumber) {
-      alert("Please fill at least one field to update");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // Only send fields that have values
-      const updateAccount = {};
-      if (email) updateAccount.email = email;
-      if (address) updateAccount.address = address;
-      if (contactnumber) updateAccount.contactnumber = contactnumber;
+      const token = localStorage.getItem("authToken");
 
-      console.log(user.accountid);
+      if (!token) {
+        alert("No authentication token found. Please log in.");
+        return;
+      }
 
       const response = await axios.put(
-        `http://localhost:5000/api/updateAccount/${user.accountid}`,
-        updateAccount,
+        `http://localhost:5000/api/user/update-profile/${user.accountid}`,
+        formData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
-        // Update local user state
-        window.location.reload(); // Refresh to show updated data
         alert("Profile updated successfully!");
-
-        // Clear form
-        setEmail("");
-        setAddress("");
-        setContactNumber("");
+        // Re-fetch the updated user data after the update
+        fetchUser(); // Trigger a re-fetch of the user profile data
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "Update failed";
-      alert(errorMessage);
-      console.error("Update error:", error);
+      alert("Error updating profile!");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +77,9 @@ const Profile = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               {user.username}
             </h1>
-            <p className="text-green-700 font-medium">PVO Head</p>
+            <p className="text-green-700 font-medium uppercase">
+              PVO {user.position}
+            </p>
           </div>
           <hr className="my-6" />
           <div className="space-y-3">
@@ -94,15 +96,9 @@ const Profile = () => {
               {user.address}
             </p>
           </div>
-          <button
-            type="submit"
-            className="mt-6 px-6 py-3 bg-red-900 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
-          >
-            Delete Account
-          </button>
         </div>
 
-        {/* Settings Form Card */}
+        {/* Settings Form */}
         <div className="bg-white p-8 shadow-lg border rounded-lg">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Settings</h2>
           <hr className="mb-6" />
@@ -112,7 +108,9 @@ const Profile = () => {
                 Email Address
               </label>
               <input
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 type="email"
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 required
@@ -123,8 +121,10 @@ const Profile = () => {
                 Phone Number
               </label>
               <input
+                name="contactnumber"
+                value={formData.contactnumber}
+                onChange={handleChange}
                 type="number"
-                onChange={(e) => setContactNumber(e.target.value)}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 required
               />
@@ -132,8 +132,10 @@ const Profile = () => {
             <div className="space-y-2">
               <label className="block text-gray-700 font-medium">Address</label>
               <input
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
                 type="text"
-                onChange={(e) => setAddress(e.target.value)}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 required
               />
@@ -142,7 +144,7 @@ const Profile = () => {
               type="submit"
               className="mt-6 px-6 py-3 bg-green-900 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
             >
-              SAVE CHANGES
+              {isLoading ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>

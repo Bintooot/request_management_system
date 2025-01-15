@@ -458,6 +458,7 @@ const CreateRequest = () => {
               <div className="flex flex-wrap justify-between items-center">
                 <span className="truncate">{fileName}</span>
                 <input
+                  required
                   type="file"
                   onChange={handleFileChange}
                   className="text-sm"

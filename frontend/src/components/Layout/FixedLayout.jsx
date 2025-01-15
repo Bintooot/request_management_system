@@ -16,32 +16,52 @@ const FixedLayout = () => {
     console.log(isOpen);
   };
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          throw new Error("No auth token found");
-        }
-
-        const response = await axios.get(
-          "http://localhost:5000/api/user-dashboard",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setUser(response.data.user);
-      } catch (error) {
-        setError(error.message);
-        localStorage.removeItem("authToken");
-        navigate("/login");
-      } finally {
-        setIsLoading(false);
+  // Function to fetch user profile data
+  const fetchUser = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("No auth token found");
       }
-    };
+
+      const response = await axios.get(
+        "http://localhost:5000/api/user/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUser(response.data);
+    } catch (error) {
+      setError(error.message);
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkTokenExpiration = () => {
+    const token = localStorage.getItem("authToken");
+    const expirationTime = localStorage.getItem("tokenExpirationTime");
+
+    if (token && expirationTime) {
+      const currentTime = Date.now();
+
+      if (currentTime > expirationTime) {
+        // Token has expired, so logout the user
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("tokenExpirationTime");
+        navigate("/login"); // Redirect to login page
+      }
+    }
+  };
+
+  useEffect(() => {
     fetchUser();
+    checkTokenExpiration();
   }, [navigate]);
 
   if (isLoading) {
@@ -52,11 +72,17 @@ const FixedLayout = () => {
     );
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    window.location.reload();
+  };
+
   return (
     <div>
       <Header
         toggleHandler={toggleHandler}
-        username={user?.username || "Guest"}
+        username={user?.username || "User"}
+        handleLogout={handleLogout}
       />
 
       {isOpen && (
@@ -70,7 +96,7 @@ const FixedLayout = () => {
           <FixedSidebar closeSidebar={() => setIsOpen(false)} />
         </aside>
         <main className="max-w-full w-full p-2">
-          <Outlet context={{ user }} />
+          <Outlet context={{ user, setUser, fetchUser }} />
         </main>
       </div>
     </div>
