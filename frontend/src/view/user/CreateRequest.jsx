@@ -450,7 +450,7 @@ const CreateRequest = () => {
                   onChange={(e) => setChicksType(e.target.value)}
                   className="text-right border-none focus:outline-none"
                 >
-                  <option value=" " disabled>
+                  <option value="" disabled>
                     Type of Chicks
                   </option>
                   <option value="Mix">Mix</option>

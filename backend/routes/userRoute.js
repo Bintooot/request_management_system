@@ -34,7 +34,7 @@ router.get("/profile", verifyToken, isUser, async (req, res) => {
   }
 });
 
-router.get("/total-pending-request/", verifyToken, async (req, res) => {
+router.get("/all-pending-request", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
@@ -47,6 +47,30 @@ router.get("/total-pending-request/", verifyToken, async (req, res) => {
 
     console.log(response);
     res.status(200).json({ response });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/total-pending-request", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { status } = req.query;
+
+    console.log(status);
+
+    const filter = {
+      requesterid: userId,
+      ...(status && { status }),
+    };
+
+    console.log(filter);
+
+    const count = await Request.countDocuments(filter);
+    return res.status(200).json({ count });
+
+    console.log(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

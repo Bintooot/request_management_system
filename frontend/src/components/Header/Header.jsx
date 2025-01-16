@@ -4,7 +4,7 @@ import { FaUser } from "react-icons/fa";
 import Banner from "../Banner/Logo";
 import { GiHamburgerMenu } from "react-icons/gi";
 
-const Header = ({ toggleHandler, username, handleLogout }) => {
+const Header = ({ togglehandler, username, handleLogout }) => {
   const [showLogout, setShowLogout] = useState(false); // State to toggle logout button visibility
 
   const toggleLogout = () => {
@@ -17,7 +17,7 @@ const Header = ({ toggleHandler, username, handleLogout }) => {
         <GiHamburgerMenu
           fontSize={30}
           cursor="pointer"
-          onClick={toggleHandler}
+          onClick={togglehandler}
           className="md:hidden"
         />
         <Banner />

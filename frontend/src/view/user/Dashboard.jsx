@@ -45,6 +45,27 @@ const Dashboard = () => {
     { id: 3, type: "Transcript", status: "In Progress", date: "2024-03-18" },
   ];
 
+  useEffect(() => {
+    const fetchTotalPendingRequest = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const response = await axios.get(
+          "/api/user/total-pending-request?status=Pending",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setRequestCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching user requests:", error);
+      }
+    };
+    fetchTotalPendingRequest();
+  });
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Welcome Section */}

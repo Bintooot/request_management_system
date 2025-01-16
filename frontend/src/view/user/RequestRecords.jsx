@@ -48,7 +48,7 @@ const RequestRecords = () => {
       }
 
       try {
-        const response = await axios.get(`/api/user//total-pending-request`, {
+        const response = await axios.get(`/api/user/all-pending-request`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
