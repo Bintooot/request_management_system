@@ -10,6 +10,7 @@ const requestSchema = new mongoose.Schema(
     requesterid: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     requesterName: { type: String, required: true },
     location: { type: String, required: true },
+    reviewedby: { type: String, default: "Not yet reviewed" },
     status: { type: String, default: "Pending" },
     chicksType: { type: String, required: true },
     quantity: { type: Number, required: true },

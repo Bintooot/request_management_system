@@ -1,17 +1,18 @@
 import React from "react";
 import { format } from "date-fns";
 
-const RequestCard = ({ items, onClick }) => {
+const RequestCard = ({ items, onClick, open, handleClose }) => {
+  if (!open) return null;
   const formattedDate = format(new Date(items.createdAt), "MMMM dd, yyyy");
 
   return (
-    items && (
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
       <div className="border border-gray-200 md:w-2/3 w-full my-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
         <h1 className="text-center p-4 font-semibold text-xl bg-gray-200 border-b rounded-t-xl">
-          CURRENT REQUEST
+          REQUEST DETAILS
         </h1>
 
-        <div className="p-6">
+        <div className="p-6 bg-white">
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <p className="text-gray-500 text-sm">Request No</p>
@@ -80,17 +81,26 @@ const RequestCard = ({ items, onClick }) => {
             <p className="font-medium text-gray-800">{items.description}</p>
           </div>
         </div>
-        <h1 className="text-end p-4 font-semibold text-xl bg-gray-200 border-t ">
+        <h1 className="text-end p-4 flex justify-between font-semibold text-xl bg-gray-200 border-t ">
           <button
             type="button"
-            onClick={() => onClick(items._id)}
+            onClick={() => {
+              onClick(items._id), handleClose();
+            }}
             className="bg-red-600 text-sm text-white px-6 py-2 rounded-md hover:bg-red-700"
           >
             Cancel Request
           </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="bg-blue-600 text-sm text-white px-6 py-2 rounded-md hover:bg-blue-700"
+          >
+            Back
+          </button>
         </h1>
       </div>
-    )
+    </div>
   );
 };
 

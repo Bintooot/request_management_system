@@ -15,6 +15,7 @@ const CustomModal = ({ open, handleClose, selectedRequest }) => {
             ×
           </button>
         </div>
+
         {selectedRequest && (
           <div className="space-y-2">
             <p>
@@ -27,7 +28,7 @@ const CustomModal = ({ open, handleClose, selectedRequest }) => {
             </p>
             <p>
               <span className="font-semibold">Type:</span>{" "}
-              {selectedRequest.typeOfChicks}
+              {selectedRequest.reviewedby}
             </p>
             <p>
               <span className="font-semibold">Quantity:</span>{" "}

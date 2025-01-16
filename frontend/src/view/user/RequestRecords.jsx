@@ -4,10 +4,11 @@ import RequestCard from "../../components/Card/RequestCard";
 import axios from "axios";
 import Notification from "../../components/Notification/Notification";
 import { useOutletContext } from "react-router-dom";
+import { format } from "date-fns";
 
 const RequestRecords = () => {
-  const { user } = useOutletContext() || { user: null };
   const [userRequests, setUserRequests] = useState([]);
+  const [userInquiry, setUserInquiry] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -20,6 +21,8 @@ const RequestRecords = () => {
 
   //View Specific Request
   const [selectedRequest, setSelectedReqest] = useState(null);
+
+  console.log(selectedRequest);
 
   const handleSelectedRequest = (items) => {
     setSelectedReqest(items);
@@ -53,6 +56,7 @@ const RequestRecords = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
         console.log(response);
         setUserRequests(response.data.response);
       } catch (error) {
@@ -62,6 +66,35 @@ const RequestRecords = () => {
       }
     };
 
+    const fetchUserInquiry = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        console.log(token);
+
+        if (!token) {
+          // Redirect to login page or show an error
+          console.error("No token found, please log in.");
+          return;
+        }
+
+        const inquiryresponse = await axios.get(
+          `/api/user/all-pending-inquiry`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(inquiryresponse);
+        setUserInquiry(inquiryresponse.data.inquiryresponse);
+      } catch (error) {
+        console.error("Error fetching user requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserInquiry();
     fetchUserRequests();
   }, []);
 
@@ -92,20 +125,9 @@ const RequestRecords = () => {
       {notificationVisible && (
         <Notification message={statusMessage} type={statusType} />
       )}
-      <div className="flex flex-col items-center h-96 border-b-2 overflow-auto">
-        {loading ? (
-          <div className="text-center p-4">Loading requests...</div>
-        ) : userRequests?.length > 0 ? (
-          userRequests.map((item) => (
-            <RequestCard key={item._id} items={item} onClick={deleteRequest} />
-          ))
-        ) : (
-          <div className="text-center p-4 text-gray-500">No requests found</div>
-        )}
-      </div>
 
       <div className="my-4">
-        <h1 className="text-xl font-semibold sm:text-2xl">Request History</h1>
+        <h1 className="text-3xl font-semibold mb-6">Request Records</h1>
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
           <select className="w-full sm:w-48 p-2 border shadow-sm">
             <option value="" disabled selected>
@@ -123,7 +145,7 @@ const RequestRecords = () => {
         </div>
 
         {/* History Table */}
-        <div className="max-h-56 my-2 overflow-auto border-2 rounded-md">
+        <div className="max-h-80  my-2 overflow-auto border-2 rounded-md">
           <div className="h-full">
             <table className="w-full text-center">
               <thead className="sticky top-0 bg-slate-200">
@@ -144,10 +166,10 @@ const RequestRecords = () => {
                   <tr key={items._id} className="text-xs sm:text-sm">
                     <td className="border-b p-3">{items.generatedRequestNo}</td>
                     <td className="border-b p-3">{items.requesterName}</td>
-                    <td className="border-b p-3">{items.reviewedBy}</td>
-                    <td className="border-b p-3">{items.typeOfChicks}</td>
-                    <td className="border-b p-3">{items.numberOfPerson}</td>
-                    <td className="border-b p-3">{items.quantityOfChicks}</td>
+                    <td className="border-b p-3 ">{items.reviewedby}</td>
+                    <td className="border-b p-3">{items.chicksType}</td>
+                    <td className="border-b p-3">{items.numberofrequester}</td>
+                    <td className="border-b p-3">{items.quantity}</td>
                     <td className="border-b p-3">
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${
@@ -161,7 +183,9 @@ const RequestRecords = () => {
                         {items.status}
                       </span>
                     </td>
-                    <td className="border-b p-3">{items.requestedDate}</td>
+                    <td className="border-b p-3">
+                      {format(new Date(items.createdAt), "MMMM dd, yyyy")}
+                    </td>
                     <td className="border-b p-3">
                       <button
                         onClick={() => {
@@ -179,12 +203,71 @@ const RequestRecords = () => {
             </table>
           </div>
         </div>
+
+        <div className="mt-8">
+          <h1 className="text-3xl font-semibold mb-6">Previous Inquiries</h1>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
+            <select className="w-full sm:w-48 p-2 border shadow-sm">
+              <option value="" disabled selected>
+                Filter Status
+              </option>
+              <option value="Approved">Viewed</option>
+              <option value="Pending">Pending</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Search by Name or ID"
+              className="w-full sm:w-64 p-2 border shadow-sm"
+            />
+          </div>
+
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {userInquiry.map((items) => (
+              <div className="border rounded-md p-4" key={items._id}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium">
+                      {items.subject || "No Subject"}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mt-1">
+                      {items.message || "No inquiry message available."}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      items.status === "Pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : items.status === "Approved"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {items.status || "Unknown"}
+                  </span>
+                </div>
+
+                <div className="mt-2 text-sm text-gray-500">
+                  Submitted on:{" "}
+                  {items.createdAt
+                    ? format(new Date(items.createdAt), "MMMM dd, yyyy")
+                    : "Unknown date"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Modal Section */}
       <div>
         {selectedRequest && (
-          <CustomModal open={openModal} handleClose={handleClose}></CustomModal>
+          <RequestCard
+            handleClose={handleClose}
+            open={openModal}
+            items={selectedRequest}
+            onClick={deleteRequest}
+          />
         )}
       </div>
     </main>

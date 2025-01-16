@@ -152,29 +152,6 @@ const Inquire = () => {
           Submit Inquiry
         </button>
       </form>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Previous Inquiries</h2>
-        <div className="space-y-4">
-          {/* Sample inquiry card */}
-          <div className="border rounded-md p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-medium">Sample Subject</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Sample inquiry message...
-                </p>
-              </div>
-              <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                Pending
-              </span>
-            </div>
-            <div className="mt-2 text-sm text-gray-500">
-              Submitted on: March 15, 2024
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
