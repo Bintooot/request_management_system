@@ -106,14 +106,17 @@ const CreateRequest = () => {
     }
 
     const formData = new FormData();
-    formData.append("requesterid", requesterid);
     formData.append("requesterName", requesterName);
     formData.append("chicksType", chicksType);
     formData.append("location", location);
     formData.append("numberofrequester", numberofrequester);
     formData.append("description", description);
     formData.append("quantity", quantity);
+    formData.append("filename", fileName);
     if (file) formData.append("file", file); // Attach the file if selected
+
+    const token = localStorage.getItem("authToken");
+    console.log(token);
 
     try {
       const response = await axios.post(
@@ -121,6 +124,7 @@ const CreateRequest = () => {
         formData,
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
@@ -228,7 +232,7 @@ const CreateRequest = () => {
                   type="text"
                   disabled
                   value={user.position}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  className="mt-1 uppercase block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -263,10 +267,13 @@ const CreateRequest = () => {
                 </label>
                 <select
                   name="chicksType"
-                  value={chicksType}
+                  value={chicksType} // Controlled by state
                   onChange={(e) => setChicksType(e.target.value)}
                   className="mt-1 border-2 p-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 >
+                  <option value="" disabled>
+                    Type of Chicks
+                  </option>
                   <option value="Mix">Mix</option>
                   <option value="Broiler">Broiler</option>
                 </select>
@@ -443,8 +450,8 @@ const CreateRequest = () => {
                   onChange={(e) => setChicksType(e.target.value)}
                   className="text-right border-none focus:outline-none"
                 >
-                  <option value="" disabled>
-                    Select Type
+                  <option value=" " disabled>
+                    Type of Chicks
                   </option>
                   <option value="Mix">Mix</option>
                   <option value="Broiler">Broiler</option>

@@ -1,6 +1,9 @@
 import React from "react";
+import { format } from "date-fns";
 
 const RequestCard = ({ items, onClick }) => {
+  const formattedDate = format(new Date(items.createdAt), "MMMM dd, yyyy");
+
   return (
     items && (
       <div className="border border-gray-200 md:w-2/3 w-full my-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -48,7 +51,7 @@ const RequestCard = ({ items, onClick }) => {
 
             <div>
               <p className="text-gray-500 text-sm">Requested Date</p>
-              <p className="font-medium text-gray-800">{items.createdAt}</p>
+              <p className="font-medium text-gray-800">{formattedDate}</p>
             </div>
 
             <div>
@@ -64,6 +67,11 @@ const RequestCard = ({ items, onClick }) => {
               >
                 {items.status}
               </span>
+            </div>
+
+            <div>
+              <p className="text-gray-500 text-sm">Attached File</p>
+              <p className="font-medium text-gray-800">{items.filename}</p>
             </div>
           </div>
 

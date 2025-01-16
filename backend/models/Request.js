@@ -7,8 +7,7 @@ const requestSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    requesterid: { type: String, required: true },
+    requesterid: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     requesterName: { type: String, required: true },
     location: { type: String, required: true },
     status: { type: String, default: "Pending" },
@@ -17,6 +16,7 @@ const requestSchema = new mongoose.Schema(
     numberofrequester: { type: Number, required: true },
     description: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
+    filename: { type: String, required: true },
     file: { type: String }, // New field for storing file path
   },
   {

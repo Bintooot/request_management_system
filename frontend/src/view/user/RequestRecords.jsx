@@ -3,8 +3,10 @@ import CustomModal from "../../components/Modal/CustomModal";
 import RequestCard from "../../components/Card/RequestCard";
 import axios from "axios";
 import Notification from "../../components/Notification/Notification";
+import { useOutletContext } from "react-router-dom";
 
 const RequestRecords = () => {
+  const { user } = useOutletContext() || { user: null };
   const [userRequests, setUserRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notificationVisible, setNotificationVisible] = useState(false);
@@ -46,13 +48,13 @@ const RequestRecords = () => {
       }
 
       try {
-        const response = await axios.get("/api/getuser-request", {
+        const response = await axios.get(`/api/user//total-pending-request`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        setUserRequests(response.data);
+        console.log(response);
+        setUserRequests(response.data.response);
       } catch (error) {
         console.error("Error fetching user requests:", error);
       } finally {
@@ -61,13 +63,12 @@ const RequestRecords = () => {
     };
 
     fetchUserRequests();
-  }, []); // Empty array ensures this only runs on component mount
+  }, []);
 
-  // deleting item
   const deleteRequest = async (requestId) => {
     try {
       console.log(requestId);
-      await axios.delete(`/api/cancel-request/${requestId}`, {
+      await axios.delete(`/api/user/cancel-request/${requestId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },

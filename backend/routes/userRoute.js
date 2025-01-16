@@ -33,6 +33,25 @@ router.get("/profile", verifyToken, isUser, async (req, res) => {
   }
 });
 
+router.get("/total-pending-request/", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    console.log(userId);
+
+    const response = await Request.find({
+      requesterid: userId,
+      status: "Pending",
+    });
+
+    console.log(response);
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Update profile of the user
 router.put("/update-profile/:id", verifyToken, async (req, res) => {
   try {
@@ -59,19 +78,22 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
 
 router.post(
   "/submit-request",
+  verifyToken,
   fileMiddleware.single("file"), // Make sure this is set up correctly in the middleware
   async (req, res) => {
     const {
-      requesterid,
       requesterName,
       chicksType,
       location,
       numberofrequester,
       description,
       quantity,
+      filename,
     } = req.body;
+    console.log(req.body);
 
-    console.log(req.body); // Log the received body
+    const userId = req.user?.userId;
+    console.log(userId);
 
     try {
       // Handle file upload if exists
@@ -80,13 +102,14 @@ router.post(
 
       const newRequest = new Request({
         generatedRequestNo,
-        requesterid,
+        requesterid: userId,
         requesterName,
         chicksType,
         location,
         numberofrequester,
         description,
         quantity,
+        filename,
         file,
       });
 
@@ -102,5 +125,44 @@ router.post(
     }
   }
 );
+
+router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
+  try {
+    const { id } = req.params; // data to delete
+    const userId = req.user?.userId; //requester ID
+
+    console.log(id);
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "No token provided or user not authorized" });
+    }
+
+    const request = await Request.findById(id);
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    console.log();
+    console.log("User ID:", id);
+    console.log("Requester ID: ", userId);
+    console.log(request);
+
+    if (request.requesterid.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete this request" });
+    }
+
+    await Request.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "Request successfully deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;
