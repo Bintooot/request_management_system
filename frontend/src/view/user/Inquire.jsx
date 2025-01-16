@@ -56,18 +56,23 @@ const Inquire = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("requesterid", user._id);
-    formData.append("requesterName", requesterName);
+    formData.append("requesterName", user.username);
     formData.append("subject", subject);
     formData.append("message", message);
     if (file) formData.append("file", file); // Attach the file if selected
 
+    const token = localStorage.getItem("authToken");
+
+    console.log(token);
+    console.log(user.username);
+
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/submit-inquiry",
+        "http://localhost:5000/api/user/submit-inquiry",
         formData,
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }

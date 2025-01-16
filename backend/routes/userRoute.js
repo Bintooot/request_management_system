@@ -4,6 +4,7 @@ import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
 import generateRequestNo from "../utils/RandomNumber.js";
+import Inquiry from "../models/Inquiry.js";
 
 const router = express.Router();
 
@@ -117,6 +118,42 @@ router.post(
       res
         .status(200)
         .json({ message: "Request submitted successfully", data: newRequest });
+    } catch (error) {
+      console.error("Error submitting request:", error);
+      res
+        .status(500)
+        .json({ message: "Error submitting request", error: error.message });
+    }
+  }
+);
+
+router.post(
+  "/submit-inquiry",
+  verifyToken,
+  isUser,
+  fileMiddleware.single("file"),
+  async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      console.log(userId);
+
+      console.log(req.body);
+
+      const { requesterName, subject, message } = req.body;
+      const file = req.file ? req.file.path : null;
+
+      const inquiry = new Inquiry({
+        userId: userId,
+        name: requesterName,
+        subject,
+        message,
+        file,
+      });
+
+      await inquiry.save();
+      res
+        .status(200)
+        .json({ message: "Inquiry submitted successfully", data: inquiry });
     } catch (error) {
       console.error("Error submitting request:", error);
       res
