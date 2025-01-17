@@ -7,6 +7,7 @@ const inquirySchema = new mongoose.Schema(
     type: { type: String, default: "Inquiry" },
     subject: { type: String, required: true },
     message: { type: String, required: true },
+    reply: { type: String },
     status: { type: String, default: "Pending" },
     file: { type: String },
     createdAt: { type: Date, default: Date.now },

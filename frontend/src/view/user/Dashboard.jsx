@@ -90,12 +90,17 @@ const Dashboard = () => {
 
     const fetchRequestData = async () => {
       try {
-        const response = await axios.get("/api/user/request-data");
-        console.log("Data received:", response.data); // Check what you get here
+        const token = localStorage.getItem("authToken");
 
-        // Format the response data to fit the chart's needs
+        const response = await axios.get("/api/user/request-data", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Data received:", response.data);
+
         const formattedData = response.data.map((item) => ({
-          name: item.date, // Assuming `date` is in YYYY-MM-DD format
+          name: item.date,
           requests: item.count,
         }));
 
@@ -150,15 +155,21 @@ const Dashboard = () => {
         {/* Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Request Timeline</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="requests" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData && chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="requests" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center  text-gray-500">
+              <h1>No data available for the request timeline.</h1>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}

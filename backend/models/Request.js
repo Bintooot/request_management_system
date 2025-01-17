@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import moment from "moment-timezone";
 
 const requestSchema = new mongoose.Schema(
   {
@@ -17,7 +18,7 @@ const requestSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     numberofrequester: { type: Number, required: true },
     description: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
+    createdAt: { type: Date },
     filename: { type: String, required: true },
     file: { type: String }, // New field for storing file path
   },
@@ -26,6 +27,14 @@ const requestSchema = new mongoose.Schema(
   }
 );
 
-const Request = mongoose.model("request", requestSchema);
+// Pre-save hook to set `createdAt` to local time
+requestSchema.pre("save", function (next) {
+  if (!this.createdAt) {
+    this.createdAt = moment.tz(Date.now(), "Asia/Manila").toDate();
+  }
+  next();
+});
+
+const Request = mongoose.model("Request", requestSchema);
 
 export default Request;

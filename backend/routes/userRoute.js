@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import Request from "../models/Request.js";
 import generateRequestNo from "../utils/RandomNumber.js";
 import Inquiry from "../models/Inquiry.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -81,12 +82,27 @@ router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/request-data", async (req, res) => {
+router.get("/request-data", verifyToken, async (req, res) => {
   try {
+    const userId = req.user.userId;
+
+    console.log("USer ID", userId);
+
     const requests = await Request.aggregate([
       {
+        $match: {
+          requesterid: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
         $project: {
-          day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          day: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "Asia/Manila", // Adjust timezone to your location
+            },
+          },
         },
       },
       {
@@ -191,7 +207,7 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
 router.post(
   "/submit-request",
   verifyToken,
-  fileMiddleware.single("file"), // Make sure this is set up correctly in the middleware
+  fileMiddleware.single("file"), // Ensure this is set up correctly in your middleware
   async (req, res) => {
     const {
       requesterName,
@@ -206,9 +222,30 @@ router.post(
     const userId = req.user?.userId;
 
     try {
+      // Get the current date and calculate the start of the current week (Monday)
+      const currentDate = new Date();
+      const dayOfWeek = currentDate.getDay();
+      const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If today is Sunday (0), set Monday as the start of the week
+      currentDate.setDate(currentDate.getDate() - diffToMonday); // Move back to the previous Monday
+      currentDate.setHours(0, 0, 0, 0); // Set to start of the day
+
+      // Check if the user already has a request within the current week
+      const existingRequest = await Request.findOne({
+        requesterid: userId,
+        createdAt: { $gte: currentDate },
+      });
+
+      console.log(existingRequest);
+
+      if (existingRequest) {
+        return res.status(400).json({
+          message: "You can only submit one request per week.",
+        });
+      }
+
       // Handle file upload if exists
       const file = req.file ? req.file.path : null;
-      const generatedRequestNo = generateRequestNo(); // Call the f
+      const generatedRequestNo = generateRequestNo();
 
       const newRequest = new Request({
         generatedRequestNo,
@@ -224,9 +261,10 @@ router.post(
       });
 
       await newRequest.save();
-      res
-        .status(200)
-        .json({ message: "Request submitted successfully", data: newRequest });
+      res.status(200).json({
+        message: "Request submitted successfully",
+        data: newRequest,
+      });
     } catch (error) {
       console.error("Error submitting request:", error);
       res
@@ -235,6 +273,56 @@ router.post(
     }
   }
 );
+
+// DEFAULT SEND REQUEST
+
+// router.post(
+//   "/submit-request",
+//   verifyToken,
+//   fileMiddleware.single("file"), // Make sure this is set up correctly in the middleware
+//   async (req, res) => {
+//     const {
+//       requesterName,
+//       chicksType,
+//       location,
+//       numberofrequester,
+//       description,
+//       quantity,
+//       filename,
+//     } = req.body;
+
+//     const userId = req.user?.userId;
+
+//     try {
+//       // Handle file upload if exists
+//       const file = req.file ? req.file.path : null;
+//       const generatedRequestNo = generateRequestNo(); // Call the f
+
+//       const newRequest = new Request({
+//         generatedRequestNo,
+//         requesterid: userId,
+//         requesterName,
+//         chicksType,
+//         location,
+//         numberofrequester,
+//         description,
+//         quantity,
+//         filename,
+//         file,
+//       });
+
+//       await newRequest.save();
+//       res
+//         .status(200)
+//         .json({ message: "Request submitted successfully", data: newRequest });
+//     } catch (error) {
+//       console.error("Error submitting request:", error);
+//       res
+//         .status(500)
+//         .json({ message: "Error submitting request", error: error.message });
+//     }
+//   }
+// );
 
 router.post(
   "/submit-inquiry",

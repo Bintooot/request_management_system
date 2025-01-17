@@ -135,7 +135,20 @@ const CreateRequest = () => {
       resetForm();
     } catch (error) {
       setLoading(false);
-      showNotification("Fill in all the necessary fields.", "error"); // Show error notification
+
+      // Check if the error has a response and contains a message
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        // Show error message from backend
+        showNotification(error.response.data.message, "error");
+      } else {
+        // Show a generic error message if the backend doesn't return a message
+        showNotification("Something went wrong. Please try again.", "error");
+      }
+
       console.error("Error creating request:", error);
     }
   };
