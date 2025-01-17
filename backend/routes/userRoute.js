@@ -301,4 +301,38 @@ router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
   }
 });
 
+router.delete("/remove-inquiry/:id", verifyToken, isUser, async (req, res) => {
+  try {
+    const { id } = req.params; // data to delete
+    const userId = req.user?.userId; //requester ID
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "No token provided or user not authorized" });
+    }
+
+    const request = await Inquiry.findById(id);
+
+    console.log("remove Inquiry ID", request);
+
+    if (!request) {
+      return res.status(404).json({ message: "Inquiry not found" });
+    }
+
+    if (request.userId.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to remove this inquiry" });
+    }
+
+    await Inquiry.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "Request successfully deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

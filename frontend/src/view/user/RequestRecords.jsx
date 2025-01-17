@@ -118,6 +118,26 @@ const RequestRecords = () => {
     }
   };
 
+  const deleteInquiry = async (requestId) => {
+    try {
+      console.log(requestId);
+      await axios.delete(`/api/user/remove-inquiry/${requestId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      setUserInquiry((prevRequests) =>
+        prevRequests.filter((request) => request._id !== requestId)
+      );
+
+      showNotification("Inquiry successfully removed!", "success");
+    } catch (error) {
+      showNotification("Inquiry failed to removed!", "failed");
+      console.error("Error deleting request:", error);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
 
   return (
@@ -148,7 +168,7 @@ const RequestRecords = () => {
         <div className="max-h-80  my-2 overflow-auto border-2 rounded-md">
           <div className="h-full">
             <table className="w-full text-center">
-              <thead className="sticky top-0 bg-slate-200">
+              <thead className=" bg-slate-200">
                 <tr className="font-semibold text-xs sm:text-sm">
                   <th className="border-b p-2">Request ID</th>
                   <th className="border-b p-2">User</th>
@@ -253,6 +273,30 @@ const RequestRecords = () => {
                   {items.createdAt
                     ? format(new Date(items.createdAt), "MMMM dd, yyyy")
                     : "Unknown date"}
+                </div>
+
+                {/* Admin Reply Section */}
+                {items.adminReply ? (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-gray-700">Admin Reply</h4>
+                    <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
+                      {items.adminReply || "No reply yet."}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 text-sm text-gray-600">
+                    No reply yet from the admin.
+                  </div>
+                )}
+
+                <div className="mt-2 text-sm text-end">
+                  <button
+                    type="button"
+                    onClick={() => deleteInquiry(items._id)}
+                    className="bg-red-600 text-sm text-white px-2 py-1 rounded-md hover:bg-red-700"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             ))}
