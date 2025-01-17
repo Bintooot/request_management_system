@@ -20,7 +20,7 @@ import {
 const Dashboard = () => {
   const { user } = useOutletContext() || { user: null };
   const [requestCount, setRequestCount] = useState(0);
-
+  const [inquiryCount, setInquiryCount] = useState(0);
   if (!user) {
     return (
       <div className="text-center mt-10">
@@ -63,6 +63,23 @@ const Dashboard = () => {
         console.error("Error fetching user requests:", error);
       }
     };
+
+    const fetchTotalInquiry = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const response = await axios.get("/api/user/total-inquiry", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setInquiryCount(response.data.response);
+      } catch (error) {
+        console.error("Error fetching user inquiry:", error);
+      }
+    };
+
+    fetchTotalInquiry();
     fetchTotalPendingRequest();
   });
 
@@ -87,8 +104,8 @@ const Dashboard = () => {
           className="bg-orange-50"
         />
         <CardMenu
-          title="Completed Requests"
-          number="8"
+          title="Total Inquiry"
+          number={inquiryCount}
           icon={<RiCheckboxCircleLine className="text-white" />}
           className="bg-green-50"
         />

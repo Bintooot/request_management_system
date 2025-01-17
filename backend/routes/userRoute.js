@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import { verifyToken, isUser } from "../middleware/authMiddleware.js";
 import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
@@ -46,6 +46,24 @@ router.get("/all-pending-request", verifyToken, async (req, res) => {
     });
 
     console.log(response);
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/total-inquiry", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    console.log(userId);
+
+    const response = await Inquiry.countDocuments({
+      userId: userId,
+      status: "Pending",
+    });
+
     res.status(200).json({ response });
   } catch (error) {
     console.error(error);
