@@ -16,11 +16,18 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const { user } = useOutletContext() || { user: null };
   const [requestCount, setRequestCount] = useState(0);
   const [inquiryCount, setInquiryCount] = useState(0);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [visibleRows, setVisibleRows] = useState(5);
+  const [chartData, setChartData] = useState([
+    { name: "Loading", requests: 0 }, // Default value to show loading state
+  ]);
+
   if (!user) {
     return (
       <div className="text-center mt-10">
@@ -30,20 +37,6 @@ const Dashboard = () => {
       </div>
     );
   }
-  // Sample data for chart
-  const chartData = [
-    { name: "Jan", requests: 4 },
-    { name: "Feb", requests: 3 },
-    { name: "Mar", requests: 7 },
-    { name: "Apr", requests: 5 },
-  ];
-
-  // Sample activity data
-  const recentActivity = [
-    { id: 1, type: "Document Request", status: "Pending", date: "2024-03-20" },
-    { id: 2, type: "Certificate", status: "Completed", date: "2024-03-19" },
-    { id: 3, type: "Transcript", status: "In Progress", date: "2024-03-18" },
-  ];
 
   useEffect(() => {
     const fetchTotalPendingRequest = async () => {
@@ -79,9 +72,44 @@ const Dashboard = () => {
       }
     };
 
+    const fetchRecentActivity = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const response = await axios.get("/api/user/recent-activity", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setRecentActivity(response.data.activities);
+      } catch (error) {
+        console.error("Error fetching user inquiry:", error);
+      }
+    };
+
+    const fetchRequestData = async () => {
+      try {
+        const response = await axios.get("/api/user/request-data");
+        console.log("Data received:", response.data); // Check what you get here
+
+        // Format the response data to fit the chart's needs
+        const formattedData = response.data.map((item) => ({
+          name: item.date, // Assuming `date` is in YYYY-MM-DD format
+          requests: item.count,
+        }));
+
+        setChartData(formattedData);
+      } catch (error) {
+        console.error("Error fetching request data:", error);
+      }
+    };
+
+    fetchRequestData();
+    fetchRecentActivity();
     fetchTotalInquiry();
     fetchTotalPendingRequest();
-  });
+  }, []);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -123,7 +151,7 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Request Timeline</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart width={500} height={300} data={chartData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -136,12 +164,19 @@ const Dashboard = () => {
         {/* Recent Activity */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <div className="overflow-x-auto">
+          <div
+            className={`overflow-y-auto ${
+              visibleRows ? "max-h-[400px]" : "max-h-[200px]"
+            } transition-all duration-300`}
+          >
             <table className="min-w-full">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Source
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Status
@@ -152,10 +187,13 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {recentActivity.map((activity) => (
-                  <tr key={activity.id} className="border-b">
+                {recentActivity.slice(0, visibleRows).map((activity, index) => (
+                  <tr key={index} className="border-b">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {activity.type}
+                      {activity.type || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {activity.source}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -171,13 +209,25 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {activity.date}
+                      {activity.createdAt
+                        ? format(new Date(activity.createdAt), "MMMM dd, yyyy")
+                        : "Unknown date"}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {recentActivity.length > visibleRows && (
+            <div className="mt-4">
+              <button
+                onClick={() => setVisibleRows((prev) => (prev === 5 ? 10 : 5))}
+                className="text-blue-500 underline"
+              >
+                {visibleRows === 5 ? "Show More" : "Show Less"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

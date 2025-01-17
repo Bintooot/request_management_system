@@ -12,7 +12,6 @@ const router = express.Router();
 router.get("/profile", verifyToken, isUser, async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log(userId);
     const user = await User.findById(userId).select("-password"); // Exclude password from the response
 
     if (!user) {
@@ -38,14 +37,11 @@ router.get("/all-pending-request", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    console.log(userId);
-
     const response = await Request.find({
       requesterid: userId,
       status: "Pending",
     });
 
-    console.log(response);
     res.status(200).json({ response });
   } catch (error) {
     console.error(error);
@@ -56,8 +52,6 @@ router.get("/all-pending-request", verifyToken, async (req, res) => {
 router.get("/total-inquiry", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-
-    console.log(userId);
 
     const response = await Inquiry.countDocuments({
       userId: userId,
@@ -75,15 +69,79 @@ router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    console.log(userId);
-
     const inquiryresponse = await Inquiry.find({
       userId: userId,
       status: "Pending",
     });
 
-    console.log(inquiryresponse);
     res.status(200).json({ inquiryresponse });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/request-data", async (req, res) => {
+  try {
+    const requests = await Request.aggregate([
+      {
+        $project: {
+          day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        },
+      },
+      {
+        $group: {
+          _id: "$day",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const formattedRequests = requests.map((request) => ({
+      date: request._id,
+      count: request.count,
+    }));
+
+    console.log("Request Data: ", requests);
+
+    // Send the formatted request data as the response
+    res.json(formattedRequests);
+  } catch (error) {
+    console.error("Error fetching request data:", error);
+    res.status(500).json({ message: "Error fetching request data" });
+  }
+});
+
+router.get("/recent-activity", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const request = await Request.find({ requesterid: userId })
+      .select("type status createdAt")
+      .lean();
+    const inquiry = await Inquiry.find({ userId: userId })
+      .select("type status createdAt")
+      .lean();
+
+    const formattedRequests = request.map((item) => ({
+      ...item,
+      source: "Request",
+    }));
+
+    const formattedInquiries = inquiry.map((item) => ({
+      ...item,
+      source: "Inquiry",
+    }));
+
+    const combinedActivities = [
+      ...formattedInquiries,
+      ...formattedRequests,
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({ success: true, activities: combinedActivities });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -95,19 +153,13 @@ router.get("/total-pending-request", verifyToken, async (req, res) => {
     const userId = req.user.userId;
     const { status } = req.query;
 
-    console.log(status);
-
     const filter = {
       requesterid: userId,
       ...(status && { status }),
     };
 
-    console.log(filter);
-
     const count = await Request.countDocuments(filter);
     return res.status(200).json({ count });
-
-    console.log(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -119,8 +171,6 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
-
-    console.log(id, updatedData);
 
     const user = await User.findOneAndUpdate({ accountid: id }, updatedData, {
       new: true,
@@ -152,10 +202,8 @@ router.post(
       quantity,
       filename,
     } = req.body;
-    console.log(req.body);
 
     const userId = req.user?.userId;
-    console.log(userId);
 
     try {
       // Handle file upload if exists
@@ -196,9 +244,6 @@ router.post(
   async (req, res) => {
     try {
       const userId = req.user.userId;
-      console.log(userId);
-
-      console.log(req.body);
 
       const { requesterName, subject, message } = req.body;
       const file = req.file ? req.file.path : null;
@@ -229,8 +274,6 @@ router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
     const { id } = req.params; // data to delete
     const userId = req.user?.userId; //requester ID
 
-    console.log(id);
-
     if (!userId) {
       return res
         .status(401)
@@ -242,11 +285,6 @@ router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
     }
-
-    console.log();
-    console.log("User ID:", id);
-    console.log("Requester ID: ", userId);
-    console.log(request);
 
     if (request.requesterid.toString() !== userId) {
       return res
