@@ -10,19 +10,20 @@ export const verifyToken = (req, res, next) => {
       .status(403)
       .json({ message: "Access denied. No token provided." });
   }
+
   const token = authHeader.split(" ")[1];
-  console.log();
   console.log("Token received:", token);
-  console.log(process.env.JWT_SECRET_KEY);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log(decoded);
+    console.log("Decoded token:", decoded);
+
     req.user = decoded;
+
     next();
   } catch (err) {
-    console.error("Error during token verification:", err);
-    res.status(403).json({ message: "Invalid token." });
+    console.error("Error during token verification:", err.message);
+    return res.status(403).json({ message: "Invalid token." });
   }
 };
 

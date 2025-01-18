@@ -117,4 +117,39 @@ router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+router.put("/update-request-status/:id", async (req, res) => {
+  const { status, adminFeedback, reviewedby } = req.body;
+  const requestId = req.params.id;
+
+  if (!status || !adminFeedback) {
+    return res
+      .status(400)
+      .json({ error: "Status and admin feedback are required." });
+  }
+
+  try {
+    const request = await Request.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    request.status = status;
+    request.adminFeedback = adminFeedback;
+    request.reviewedby = reviewedby;
+
+    await request.save();
+
+    res.status(200).json({
+      message: "Request status updated successfully!",
+      updatedRequest: request,
+    });
+  } catch (error) {
+    console.error("Error updating request:", error);
+    res
+      .status(500)
+      .json({ error: "Server error, failed to update request status." });
+  }
+});
+
 export default router;

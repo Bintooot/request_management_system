@@ -32,7 +32,6 @@ export const register = async (req, res) => {
   }
 };
 
-// Login handler (both admin and user)
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,7 +63,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({ token, role: user.role });
   } catch (err) {
-    console.error("Login error:", err); // Log the error here
+    console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

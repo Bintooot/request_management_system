@@ -1,18 +1,16 @@
 import React from "react";
 
-const Dropdown = ({ statusdata, placeholder, onChange, value }) => {
+const Dropdown = ({ statusdata, onChange, value }) => {
   return (
     <div>
       <select
         className="w-full border-2 p-2 text-sm"
+        required
         onChange={(e) => onChange(e.target.value)}
-        value={value} // Use value to control the selected option
+        value={value || ""}
       >
-        <option value="" disabled>
-          {placeholder}
-        </option>
         {statusdata.map((status, index) => (
-          <option key={index} value={status}>
+          <option key={index} value={status} disabled={index === 0}>
             {status}
           </option>
         ))}

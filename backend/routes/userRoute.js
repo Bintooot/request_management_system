@@ -3,7 +3,6 @@ import { verifyToken, isUser } from "../middleware/authMiddleware.js";
 import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
-import generateRequestNo from "../utils/RandomNumber.js";
 import Inquiry from "../models/Inquiry.js";
 import mongoose from "mongoose";
 
@@ -13,10 +12,11 @@ const router = express.Router();
 router.get("/profile", verifyToken, isUser, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId).select("-password"); // Exclude password from the response
+    console.log("Profile", userId);
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json({
@@ -34,13 +34,12 @@ router.get("/profile", verifyToken, isUser, async (req, res) => {
   }
 });
 
-router.get("/all-pending-request", verifyToken, async (req, res) => {
+router.get("/current-user-request", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
     const response = await Request.find({
       requesterid: userId,
-      status: "Pending",
     });
 
     res.status(200).json({ response });
@@ -100,7 +99,7 @@ router.get("/request-data", verifyToken, async (req, res) => {
             $dateToString: {
               format: "%Y-%m-%d",
               date: "$createdAt",
-              timezone: "Asia/Manila", // Adjust timezone to your location
+              timezone: "Asia/Manila",
             },
           },
         },
@@ -206,8 +205,9 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
 
 router.post(
   "/submit-request",
-  verifyToken,
   fileMiddleware.single("file"),
+  verifyToken,
+  isUser,
   async (req, res) => {
     const {
       requesterName,
@@ -216,10 +216,9 @@ router.post(
       numberofrequester,
       description,
       quantity,
-      filename,
     } = req.body;
 
-    const userId = req.user?.userId;
+    const userId = req.user.userId;
 
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
@@ -243,9 +242,8 @@ router.post(
         });
       }
 
-      // Handle file upload if exists
-      const file = req.file ? req.file.path : null;
-      const generatedRequestNo = generateRequestNo();
+      const file = req.file.path;
+      const generatedRequestNo = `REQ-${Date.now()}`;
 
       const newRequest = new Request({
         generatedRequestNo,
@@ -256,7 +254,7 @@ router.post(
         numberofrequester,
         description,
         quantity,
-        filename,
+        filename: req.file.originalname,
         file,
       });
 

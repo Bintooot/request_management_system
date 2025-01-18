@@ -18,6 +18,7 @@ const requestSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     numberofrequester: { type: Number, required: true },
     description: { type: String, required: true },
+    adminFeedback: { type: String, default: "" },
     createdAt: { type: Date },
     filename: { type: String, required: true },
     file: { type: String }, // New field for storing file path
