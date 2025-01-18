@@ -33,7 +33,7 @@ const AdminLayout = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5000/api/admin/profile", // Make sure this is the correct route
+          "http://localhost:5000/api/admin/profile",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -172,7 +172,7 @@ const AdminLayout = () => {
         </nav>
       </header>
       <main className="gap-5 md:mt-16 md:mx-16 p-3">
-        <Outlet />
+        <Outlet context={{ adminData }} />
       </main>
     </div>
   );

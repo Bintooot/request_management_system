@@ -1,47 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/Navigation/Sidebar";
 import UserList from "../../components/TableList/UserList";
 import ProfileCard from "../../components/Card/ProfileCard";
+import axios from "axios";
 
 const UserAccount = () => {
-  const user_list = [
-    {
-      id: 1,
-      username: "Alexa Pis-ing",
-      email: "example@gmail.com",
-      date_created: "10/10/10",
-    },
-    {
-      id: 2,
-      username: "Michael Lowe",
-      email: "thompsonjeffrey@gmail.com",
-      date_created: "27/01/86",
-    },
-    {
-      id: 3,
-      username: "Tasha Day",
-      email: "andrea93@hernandez.info",
-      date_created: "10/03/73",
-    },
-    {
-      id: 4,
-      username: "Sharon Holland",
-      email: "vward@williams.biz",
-      date_created: "12/06/91",
-    },
-    {
-      id: 5,
-      username: "Amber Walker",
-      email: "bobbymcintosh@kelley.info",
-      date_created: "17/01/08",
-    },
-    {
-      id: 6,
-      username: "Patrick Sullivan",
-      email: "tammy39@hotmail.com",
-      date_created: "12/07/17",
-    },
-  ];
+  const [userList, setUserList] = useState([]);
   const [viewUser, setViewUser] = useState("");
 
   const viewUserHandler = (user) => {
@@ -49,30 +13,75 @@ const UserAccount = () => {
     console.log(user);
   };
 
+  useEffect(() => {
+    const fetchListOfUser = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const response = await axios.get("/api/admin/list-of-user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUserList(response.data.users);
+      } catch (error) {
+        console.error("Error fetching list of users:", error);
+      }
+    };
+
+    fetchListOfUser();
+  }, []);
+
   return (
-    <>
-      <div className="gap-3 p-5 md:flex ">
-        <div className="md:w-1/3  mb-5">
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex p-5 gap-5 flex-col md:flex-row">
+        {/* Sidebar Section */}
+        <div className="md:w-1/4 mb-5">
           <Sidebar />
         </div>
-        <div className="md:flex gap-2 w-full">
-          <div className="h-[350px] border-2 rounded-lg shadow-lg md:w-1/2 p-5 mb-5">
-            <h1 className="font-semibold uppercase p-2">Users List</h1>
-            <br />
-            <div className="h-60 overflow-y-scroll">
-              <UserList request={user_list} onClick={viewUserHandler} />
+
+        {/* Main Content */}
+        <div className="flex flex-col md:flex-row gap-5 w-full">
+          {/* User List Section */}
+          <div className="bg-white border-2 rounded-lg shadow-lg md:w-1/2 p-6 overflow-auto">
+            <h1 className="text-xl font-semibold text-gray-700">Users List</h1>
+            <div className="mt-4 h-[60vh] overflow-y-scroll">
+              <UserList request={userList} onClick={viewUserHandler} />
             </div>
           </div>
-          <div className="h-[350px] border-2 rounded-lg shadow-lg md:w-1/2 p-5">
-            <ProfileCard
-              username={viewUser.username}
-              id={viewUser.id}
-              email={viewUser.email}
-            />
+
+          {/* Profile Card Section */}
+          <div className="bg-white border-2 rounded-lg shadow-lg md:w-1/2 p-6 mt-5 md:mt-0">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              User Profile
+            </h2>
+            {viewUser && (
+              <ProfileCard
+                namelabel="Admin ID:"
+                address={viewUser.address}
+                contactnumber={viewUser.contactnumber}
+                position={viewUser.position}
+                createdAt={viewUser.createdAt}
+                username={viewUser.username}
+                id={viewUser.accountid}
+                email={viewUser.email}
+              />
+            )}
+            {!viewUser && (
+              <p className="text-gray-500 text-center">
+                Select an user to view profile
+              </p>
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

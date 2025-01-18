@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import axios from "axios";
 
 const Profile = () => {
-  const { user, setUser, fetchUser } = useOutletContext() || {
+  const { user, fetchUser } = useOutletContext() || {
     user: null,
     setUser: null,
     fetchUser: null,
