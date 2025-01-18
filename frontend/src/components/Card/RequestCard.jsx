@@ -12,8 +12,8 @@ const RequestCard = ({ items, onClick, open, handleClose }) => {
           REQUEST DETAILS
         </h1>
 
-        <div className="p-6 bg-white">
-          <div className="grid md:grid-cols-3 gap-6">
+        <div className="p-4 bg-white">
+          <div className="grid md:grid-cols-3 gap-3">
             <div>
               <p className="text-gray-500 text-sm">Request No</p>
               <p className="font-medium text-gray-800">
@@ -80,17 +80,32 @@ const RequestCard = ({ items, onClick, open, handleClose }) => {
             <p className="text-gray-500 text-sm">Description</p>
             <p className="font-medium text-gray-800">{items.description}</p>
           </div>
+          <div className="mt-6 flex flex-col gap-2">
+            <div>
+              <p className="text-gray-500 text-sm">Reviewed By</p>
+              <p className="font-medium text-gray-800">{items.reviewedby}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 text-sm">Admin Feedback</p>
+              <p className="font-medium text-gray-800">{items.adminFeedback}</p>
+            </div>
+          </div>
         </div>
-        <h1 className="text-end p-4 flex justify-between font-semibold text-xl bg-gray-200 border-t ">
-          <button
-            type="button"
-            onClick={() => {
-              onClick(items._id), handleClose();
-            }}
-            className="bg-red-600 text-sm text-white px-6 py-2 rounded-md hover:bg-red-700"
-          >
-            Cancel Request
-          </button>
+
+        <h1 className="text-end p-4 flex justify-between font-semibold text-xl bg-gray-200 border-t">
+          {items.status === "Pending" && (
+            <button
+              type="button"
+              onClick={() => {
+                onClick(items._id);
+                handleClose();
+              }}
+              className="bg-red-600 text-sm text-white px-6 py-2 rounded-md hover:bg-red-700"
+            >
+              Cancel Request
+            </button>
+          )}
           <button
             type="button"
             onClick={handleClose}

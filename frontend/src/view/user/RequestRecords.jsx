@@ -42,10 +42,7 @@ const RequestRecords = () => {
     const fetchUserRequests = async () => {
       const token = localStorage.getItem("authToken");
 
-      console.log(token);
-
       if (!token) {
-        // Redirect to login page or show an error
         console.error("No token found, please log in.");
         return;
       }
@@ -57,8 +54,8 @@ const RequestRecords = () => {
           },
         });
 
-        console.log(response);
-        setUserRequests(response.data.response);
+        console.log(response.data.requestresponse);
+        setUserRequests(response.data.requestresponse || []); // Fallback to an empty array
       } catch (error) {
         console.error("Error fetching user requests:", error);
       } finally {
