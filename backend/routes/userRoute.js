@@ -207,7 +207,7 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
 router.post(
   "/submit-request",
   verifyToken,
-  fileMiddleware.single("file"), // Ensure this is set up correctly in your middleware
+  fileMiddleware.single("file"),
   async (req, res) => {
     const {
       requesterName,
@@ -221,21 +221,21 @@ router.post(
 
     const userId = req.user?.userId;
 
+    if (!req.file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
     try {
-      // Get the current date and calculate the start of the current week (Monday)
       const currentDate = new Date();
       const dayOfWeek = currentDate.getDay();
-      const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If today is Sunday (0), set Monday as the start of the week
-      currentDate.setDate(currentDate.getDate() - diffToMonday); // Move back to the previous Monday
-      currentDate.setHours(0, 0, 0, 0); // Set to start of the day
+      const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      currentDate.setDate(currentDate.getDate() - diffToMonday);
+      currentDate.setHours(0, 0, 0, 0);
 
-      // Check if the user already has a request within the current week
       const existingRequest = await Request.findOne({
         requesterid: userId,
         createdAt: { $gte: currentDate },
       });
-
-      console.log(existingRequest);
 
       if (existingRequest) {
         return res.status(400).json({

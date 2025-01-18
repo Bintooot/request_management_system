@@ -4,12 +4,12 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 
-// Importing routes
+// Import routes
 import authRoutes from "./routes/authRoute.js";
 import adminRoutes from "./routes/adminRoute.js";
 import userRoutes from "./routes/userRoute.js";
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 const app = express();
 
@@ -23,6 +23,9 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("MongoDB connection error:", err));
+
+// Serve static files
+app.use("/uploads", express.static("uploads"));
 
 // Use routes
 app.use("/api/auth", authRoutes);

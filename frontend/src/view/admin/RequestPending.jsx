@@ -1,242 +1,170 @@
-import React, { useState } from "react";
-import ListofRequest from "../../components/Card/ListofRequest";
-import Button from "../../components/Button";
-import Dropdown from "../../components/Dropdown";
+import React, { useEffect, useState } from "react";
+import ListofRequest from "../../components/Card/ListofRequest"; // Assuming this component exists for listing requests
+import Button from "../../components/Button"; // Assuming this component exists for buttons
+import Dropdown from "../../components/Dropdown"; // Assuming this component exists for dropdowns
+import axios from "axios";
+import { format } from "date-fns";
 
 const RequestPending = () => {
-  const user_request = [
-    {
-      id: 1,
-      username: "Ben Aniasco",
-      reqDate: "08/18/03",
-      typeOfChicks: "Manok",
-      quantityOfChicks: 30,
-      status: "Pending",
-      fileAttached: "",
-      note: "Hello Dear",
-    },
-    {
-      id: 2,
-      username: "Maria Lopez",
-      reqDate: "09/12/03",
-      typeOfChicks: "Ducks",
-      quantityOfChicks: 15,
-      status: "Pending",
-      fileAttached: "",
-      note: "Looking forward to the delivery.",
-    },
-    {
-      id: 3,
-      username: "John Smith",
-      reqDate: "10/05/03",
-      typeOfChicks: "Quail",
-      quantityOfChicks: 50,
-      status: "Pending",
-      fileAttached: "",
-      note: "Please expedite the process.",
-    },
-    {
-      id: 4,
-      username: "Sara Johnson",
-      reqDate: "11/22/03",
-      typeOfChicks: "Manok",
-      quantityOfChicks: 20,
-      status: "Pending",
-      fileAttached: "",
-      note: "Need more information.",
-    },
-    {
-      id: 5,
-      username: "David Brown",
-      reqDate: "12/01/03",
-      typeOfChicks: "Turkey",
-      quantityOfChicks: 10,
-      status: "Pending",
-      fileAttached: "",
-      note: "",
-    },
-    {
-      id: 6,
-      username: "Emily Davis",
-      reqDate: "01/15/04",
-      typeOfChicks: "Manok",
-      quantityOfChicks: 25,
-      status: "Pending",
-      fileAttached: "",
-      note: "",
-    },
-    {
-      id: 7,
-      username: "Michael Wilson",
-      reqDate: "02/20/04",
-      typeOfChicks: "Ducks",
-      quantityOfChicks: 40,
-      status: "Pending",
-      fileAttached: "",
-      note: "",
-    },
-    {
-      id: 8,
-      username: "Jessica Taylor",
-      reqDate: "03/10/04",
-      typeOfChicks: "Dino",
-      quantityOfChicks: 0,
-      status: "Pending",
-      fileAttached: "",
-      note: "",
-    },
-    {
-      id: 9,
-      username: "Mabyy",
-      reqDate: "10/10/24",
-      typeOfChicks: "Manok",
-      quantityOfChicks: 15,
-      status: "Pending",
-      fileAttached: "",
-      note: "Please confirm the order.",
-    },
-    {
-      id: 10,
-      username: "Linda Green",
-      reqDate: "04/25/04",
-      typeOfChicks: "Quail",
-      quantityOfChicks: 35,
-      status: "Pending",
-      fileAttached: "",
-      note: "",
-    },
-  ];
-
-  // Initial status set to "Pending"
   const [updateStatus, setUpdateStatus] = useState("Pending");
+  const [adminFeedback, setAdminFeedback] = useState("");
+  const [viewRequest, setViewRequest] = useState(null);
+  const [listPendingRequest, setListPendingRequest] = useState([]);
 
-  // Handle status change from Dropdown
-  const statusHandler = (newStatus) => {
-    setUpdateStatus(newStatus);
-  };
+  // Handle status change (Approved, Reject)
+  const statusHandler = (newStatus) => setUpdateStatus(newStatus);
 
-  //view Request Details
-  const [viewRequest, setViewRequest] = useState(" ");
-
+  // Handle viewing request details
   const handlerViewRequest = (request) => {
     setViewRequest(request);
-    setUpdateStatus(request);
-    console.log(request);
+    setUpdateStatus(request.status);
   };
 
-  return (
-    <>
-      <div className="md:flex p-2  gap-2">
-        <div className=" border-2 text-sm p-5 shadow-lg rounded-lg md:w-1/3 w-full">
-          <h1>
-            <strong>List of Pendings</strong>
-          </h1>
-          <div className="my-3">
-            <ListofRequest
-              onClick={handlerViewRequest}
-              request={user_request}
-            />
-          </div>
-        </div>
-        <div className="md:flex-col flex-grow md:my-0 my-3 gap-2 ">
-          <h1 className="font-semibold text-xl my-2 uppercase">
-            Request Details
-          </h1>
-          {viewRequest && (
-            <div className="border-2 shadow-lg rounded-lg p-5 h-[80vh]">
-              <div className="h-[69vh] p-2 overflow-y-auto">
-                <div className="flex justify-between  items-center gap-1  w-full  overflow-y-hidden">
-                  <div className="flex flex-col gap-1">
-                    <h1>
-                      <strong>Name:</strong> {viewRequest.username}
-                    </h1>
-                    <h2>
-                      <strong>ID: </strong> {viewRequest.id}
-                    </h2>
-                  </div>
-                  <div>
-                    <p>
-                      <strong>Status: </strong>
-                      <small
-                        className={`rounded px-1 text-white ${
-                          updateStatus === "Approved"
-                            ? "bg-green-500"
-                            : updateStatus === "Reject"
-                            ? "bg-red-500"
-                            : "bg-blue-400" // Default for "Pending"
-                        }`}
-                      >
-                        {viewRequest.status}
-                      </small>
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <h2>
-                    <strong>Type of Chicks: </strong>
-                    {viewRequest.typeOfChicks}
-                  </h2>
-                  <h2>
-                    <strong> Quantity: </strong>
-                    {viewRequest.quantityOfChicks}
-                  </h2>
-                  <h2>
-                    <strong> Date Requested: </strong>
-                    {viewRequest.reqDate}
-                  </h2>
-                </div>
+  // Handle file download
+  const handleFileDownload = (fileUrl) => {
+    window.open(fileUrl, "_blank");
+  };
 
-                <h1 className="my-3">
-                  <strong>Uploaded Files:</strong>
-                </h1>
-                <div className="border">
-                  <ul>
-                    <li className="text-end">
-                      <Button
-                        name="Download"
-                        hoverbgcolor="hover:bg-green-500"
-                      />
-                    </li>
-                  </ul>
-                </div>
-                <div className="flex-grow my-3">
-                  <h2>
-                    <strong>Note:</strong>
-                  </h2>
-                  <textarea
-                    name="body"
-                    id="feedback"
-                    className="w-full my-2 border-2 h-[20vh] resize-none overflow-y-auto p-2 text-sm"
-                    value={viewRequest.note}
-                  ></textarea>
-                </div>
-                <div className="py-2">
-                  <hr className="border-black my-2" />
-                  <h2>
-                    <strong>Admin Feedback:</strong>
-                  </h2>
-                  <div className="flex-grow">
-                    <textarea
-                      name="body"
-                      id="body"
-                      className="w-full my-2 border-2 h-[20vh] resize-none overflow-y-auto p-2 text-sm"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end my-1 gap-2">
-                <Dropdown
-                  statusdata={["Approved", "Reject"]}
-                  placeholder="Status"
-                  onChange={statusHandler}
-                />
-                <Button name="Submit" hoverbgcolor="hover:bg-green-500" />
-              </div>
-            </div>
-          )}
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    const fetchListOfPendingRequest = async () => {
+      try {
+        const response = await axios.get(`/api/admin/list-pending-request`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setListPendingRequest(response.data.response);
+      } catch (error) {
+        console.error("Error fetching list of pending request data:", error);
+      }
+    };
+    fetchListOfPendingRequest();
+  }, []);
+
+  return (
+    <div className="md:flex p-2 gap-2">
+      {/* Pending Requests List */}
+      <div className="border-2 text-sm p-5 shadow-lg rounded-lg md:w-1/3 w-full">
+        <h1>
+          <strong>List of Pendings</strong>
+        </h1>
+        <div className="my-3">
+          <ListofRequest
+            onClick={handlerViewRequest}
+            request={listPendingRequest}
+          />
         </div>
       </div>
-    </>
+
+      {/* Request Details */}
+      <div className="md:flex-col flex-grow md:my-0 my-3 gap-2">
+        <h1 className="font-semibold text-xl my-2 uppercase">
+          Request Details
+        </h1>
+        {viewRequest && (
+          <div className="border-2 shadow-lg rounded-lg p-5 h-[80vh] sm:h-[70vh] overflow-hidden">
+            <div className="h-[69vh] p-2 overflow-y-auto">
+              {/* User Info */}
+              <div className="flex justify-between items-center gap-1 w-full overflow-y-hidden">
+                <div className="flex flex-col gap-1">
+                  <h1>
+                    <strong>Name:</strong> {viewRequest.requesterName}
+                  </h1>
+                  <h2>
+                    <strong>ID:</strong> {viewRequest.generatedRequestNo}
+                  </h2>
+                </div>
+                <div>
+                  <p>
+                    <strong>Status:</strong>
+                    <small
+                      className={`rounded px-1 text-white ${
+                        updateStatus === "Approved"
+                          ? "bg-green-500"
+                          : updateStatus === "Reject"
+                          ? "bg-red-500"
+                          : "bg-blue-400"
+                      }`}
+                    >
+                      {updateStatus}
+                    </small>
+                  </p>
+                </div>
+              </div>
+              {/* Request Info */}
+              <div className="flex flex-col gap-1">
+                <h2>
+                  <strong>Type of Chicks:</strong> {viewRequest.chicksType}
+                </h2>
+                <h2>
+                  <strong>Quantity:</strong> {viewRequest.quantity}
+                </h2>
+                <h2>
+                  <strong>Date Requested:</strong>{" "}
+                  {format(new Date(viewRequest.createdAt), "MMMM dd, yyyy")}
+                </h2>
+              </div>
+
+              <div className="flex-grow my-3">
+                <h2>
+                  <strong>Attached File:</strong>
+                </h2>
+                <div className="my-2">
+                  <p>{viewRequest.filename}</p>
+                  <Button
+                    name="Download File"
+                    hoverbgcolor="hover:bg-blue-500"
+                    onClick={() =>
+                      window.open(
+                        `http://localhost:5000/${viewRequest.file}`,
+                        "_blank",
+                        "noreferrer"
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex-grow my-3">
+                <h2>
+                  <strong>Description:</strong>
+                </h2>
+                <textarea
+                  className="w-full my-2 border-2 h-[20vh] resize-none overflow-y-auto p-2 text-sm"
+                  value={viewRequest.description}
+                  readOnly
+                ></textarea>
+              </div>
+              {/* Admin Feedback */}
+              <div className="py-2">
+                <hr className="border-black my-2" />
+                <h2>
+                  <strong>Admin Feedback:</strong>
+                </h2>
+                <textarea
+                  className="w-full my-2 border-2 h-[20vh] resize-none overflow-y-auto p-2 text-sm"
+                  value={adminFeedback}
+                  onChange={(e) => setAdminFeedback(e.target.value)}
+                ></textarea>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end my-1 gap-2">
+              <Dropdown
+                statusdata={["Approved", "Reject"]}
+                placeholder="Status"
+                onChange={statusHandler}
+                value={updateStatus}
+              />
+              <Button name="Submit" hoverbgcolor="hover:bg-green-500" />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import CustomModal from "../../components/Modal/CustomModal";
 import Dropdown from "../../components/Dropdown";
+import axios from "axios";
 
 const ApprovedRequest = () => {
   const approved_list = [

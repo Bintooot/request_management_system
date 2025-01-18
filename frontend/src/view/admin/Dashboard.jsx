@@ -35,7 +35,7 @@ const Dashboard = () => {
 
         setTotalPendingRequest(response.data.response);
       } catch (error) {
-        console.error("Error fetching pending inquiries data:", error);
+        console.error("Error fetching pending request data:", error);
       }
     };
     fetchTotalPendingRequest();

@@ -66,7 +66,7 @@ const AdminLayout = () => {
     <div>
       <header>
         <Header
-          togglehandler={togglehandler}
+          toggleHandler={togglehandler}
           username={adminData?.username}
           handleLogout={handleLogout}
         />

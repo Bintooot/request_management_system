@@ -1,18 +1,17 @@
-// routes/admin.js
 import express from "express";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import Admin from "../models/Admin.js";
 import User from "../models/User.js";
-import Inquiry from "../models/Inquiry.js";
 import Request from "../models/Request.js";
+import Inquiry from "../models/Inquiry.js";
 
 const router = express.Router();
 
+// Get admin profile
 router.get("/profile", verifyToken, isAdmin, async (req, res) => {
   try {
     const adminId = req.user.userId;
-
-    const admin = await Admin.findById(adminId).select("-password"); // Exclude password from the response
+    const admin = await Admin.findById(adminId).select("-password");
 
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -33,61 +32,45 @@ router.get("/profile", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// Total count of user
+// Get total count of users
 router.get("/total-user", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await User.countDocuments();
+    const count = await User.countDocuments();
 
-    console.log(response);
-    res.status(200).json({ response });
+    res.status(200).json({ response: count });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Total count of admin
+// Get total count of admins
 router.get("/total-admin", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await Admin.countDocuments();
-
-    res.status(200).json({ response });
+    const count = await Admin.countDocuments();
+    res.status(200).json({ response: count });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Users List
+// List all users
 router.get("/list-of-user", verifyToken, isAdmin, async (req, res) => {
   try {
-    const adminId = req.user.userId;
-
-    const response = await User.find(
-      {},
-      "accountid username email contactnumber position address createdAt"
-    ).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      users: response,
-    });
+    const users = await User.find({}).sort({ createdAt: -1 });
+    res.status(200).json({ users });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Admin List
+// List all admin
 router.get("/list-of-admin", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await Admin.find(
-      {},
-      "accountid username email contactnumber position address createdAt"
-    ).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      users: response,
-    });
+    const users = await Admin.find({}).sort({ createdAt: -1 });
+    res.status(200).json({ users });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -96,24 +79,38 @@ router.get("/list-of-admin", verifyToken, isAdmin, async (req, res) => {
 
 router.get("/total-pending-inquiry", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await Inquiry.countDocuments({
+    const pendingInquiriesCount = await Inquiry.countDocuments({
       status: "Pending",
     });
-
-    res.status(200).json({ response });
+    res.status(200).json({ response: pendingInquiriesCount });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching total pending inquiries:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching total pending inquiries." });
   }
 });
 
 router.get("/total-pending-request", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await Request.countDocuments({
+    const pendingRequestsCount = await Request.countDocuments({
       status: "Pending",
     });
+    res.status(200).json({ response: pendingRequestsCount });
+  } catch (error) {
+    console.error("Error fetching total pending requests:", error);
+    res.status(500).json({ message: "Error fetching total pending requests." });
+  }
+});
 
-    res.status(200).json({ response });
+// List all pending requests
+router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const pendingRequests = await Request.find({ status: "Pending" }).lean();
+
+    console.log(pendingRequests);
+
+    res.status(200).json({ response: pendingRequests });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
