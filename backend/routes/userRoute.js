@@ -65,6 +65,21 @@ router.get("/total-inquiry", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/total-request", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const response = await Request.countDocuments({
+      requesterid: userId,
+    });
+
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;

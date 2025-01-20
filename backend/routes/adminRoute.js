@@ -117,6 +117,19 @@ router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const approvedlist = await Request.find({
+      status: "Approved",
+    });
+
+    res.status(200).json({ approvedlist });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.put("/update-request-status/:id", async (req, res) => {
   const { status, adminFeedback, reviewedby } = req.body;
   const requestId = req.params.id;

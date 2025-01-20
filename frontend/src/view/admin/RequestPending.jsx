@@ -94,16 +94,22 @@ const RequestPending = () => {
       <div className="border-2 text-sm p-6 shadow-lg rounded-lg md:w-1/3 w-full">
         <h1 className="font-bold text-lg mb-4">List of Pending Requests</h1>
         <div className="my-3">
-          <ListofRequest
-            onClick={handlerViewRequest}
-            request={listPendingRequest}
-          />
+          {listPendingRequest.length > 0 ? (
+            <ListofRequest
+              onClick={handlerViewRequest}
+              request={listPendingRequest}
+            />
+          ) : (
+            <p className="text-gray-500 text-center mt-4">
+              No pending requests found.
+            </p>
+          )}
         </div>
       </div>
 
       {/* Request Details */}
       <div className="md:w-2/3 w-full md:pl-6 pl-0">
-        {viewRequest && (
+        {viewRequest ? (
           <div className="border-2 shadow-lg rounded-lg p-6 ">
             <h1 className="font-semibold text-2xl mb-4">Request Details</h1>
 
@@ -123,13 +129,12 @@ const RequestPending = () => {
                   className={`rounded px-2 text-white ${
                     updateStatus === "Approved"
                       ? "bg-green-500"
-                      : updateStatus === "Reject"
+                      : updateStatus === "Rejected"
                       ? "bg-red-500"
                       : "bg-blue-400"
                   }`}
                 >
-                  {updateStatus || "Select a Status to update"}{" "}
-                  {/* Show default text */}
+                  {updateStatus || "Select a Status to update"}
                 </small>
               </div>
             </div>
@@ -141,7 +146,12 @@ const RequestPending = () => {
               <h2 className="font-medium">Quantity:</h2>
               <p>{viewRequest.quantity}</p>
               <h2 className="font-medium">Date Requested:</h2>
-              <p>{format(new Date(viewRequest.createdAt), "MMMM dd, yyyy")}</p>
+              <p>
+                {format(
+                  new Date(viewRequest.createdAt),
+                  "MMMM dd, yyyy hh:mm a"
+                )}
+              </p>
             </div>
 
             {/* Attached File */}
@@ -231,6 +241,10 @@ const RequestPending = () => {
                 onClick={submitStatusUpdate}
               />
             </div>
+          </div>
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-500 text-lg">No request selected.</p>
           </div>
         )}
       </div>

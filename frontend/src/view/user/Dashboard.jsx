@@ -21,6 +21,7 @@ import { format } from "date-fns";
 const Dashboard = () => {
   const { user } = useOutletContext() || { user: null };
   const [requestCount, setRequestCount] = useState(0);
+  const [totalRequest, setTotalRequest] = useState(0);
   const [inquiryCount, setInquiryCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
   const [visibleRows, setVisibleRows] = useState(5);
@@ -72,6 +73,21 @@ const Dashboard = () => {
       }
     };
 
+    const fetchTotalRequest = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const response = await axios.get("/api/user/total-request", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setTotalRequest(response.data.response);
+      } catch (error) {
+        console.error("Error fetching user inquiry:", error);
+      }
+    };
+
     const fetchRecentActivity = async () => {
       try {
         const token = localStorage.getItem("authToken");
@@ -110,6 +126,8 @@ const Dashboard = () => {
       }
     };
 
+    fetchTotalRequest();
+
     fetchRequestData();
     fetchRecentActivity();
     fetchTotalInquiry();
@@ -144,7 +162,7 @@ const Dashboard = () => {
         />
         <CardMenu
           title="Total Requests"
-          number="13"
+          number={totalRequest}
           icon={<RiMailSendLine className="text-white" />}
           className="bg-blue-50"
         />
@@ -213,7 +231,7 @@ const Dashboard = () => {
                             ? "bg-green-100 text-green-800"
                             : activity.status === "Pending"
                             ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {activity.status}

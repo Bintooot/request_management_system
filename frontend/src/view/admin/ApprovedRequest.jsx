@@ -3,197 +3,152 @@ import Button from "../../components/Button";
 import CustomModal from "../../components/Modal/CustomModal";
 import Dropdown from "../../components/Dropdown";
 import axios from "axios";
+import { format } from "date-fns";
 
 const ApprovedRequest = () => {
-  const approved_list = [
-    {
-      id: 1,
-      name: "Ben",
-      requestType: "Chicks",
-      date_submited: "12/11/23",
-      date_approved: "12/08/24",
-      status: "Approved",
-    },
-
-    {
-      id: 1,
-      name: "Ben",
-      requestType: "Chicks",
-      date_submited: "12/11/23",
-      date_approved: "12/08/24",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      name: "Alice",
-      requestType: "Ducklings",
-      date_submited: "12/10/23",
-      date_approved: "12/09/24",
-      status: "Approved",
-    },
-    {
-      id: 3,
-      name: "Charlie",
-      requestType: "Puppies",
-      date_submited: "12/09/23",
-      date_approved: "12/07/24",
-      status: "Approved",
-    },
-    {
-      id: 4,
-      name: "Diana",
-      requestType: "Kittens",
-      date_submited: "12/08/23",
-      date_approved: "12/06/24",
-      status: "Approved",
-    },
-    {
-      id: 5,
-      name: "Ethan",
-      requestType: "Goats",
-      date_submited: "12/07/23",
-      date_approved: "12/05/24",
-      status: "Approved",
-    },
-    {
-      id: 6,
-      name: "Fiona",
-      requestType: "Rabbits",
-      date_submited: "12/06/23",
-      date_approved: "12/04/24",
-      status: "Approved",
-    },
-    {
-      id: 7,
-      name: "George",
-      requestType: "Lambs",
-      date_submited: "12/05/23",
-      date_approved: "12/03/24",
-      status: "Approved",
-    },
-    {
-      id: 8,
-      name: "Hannah",
-      requestType: "Chicks",
-      date_submited: "12/04/23",
-      date_approved: "12/08/25",
-      status: "Pending",
-    },
-    {
-      id: 9,
-      name: "Ian",
-      requestType: "Turkeys",
-      date_submited: "12/03/23",
-      date_approved: "12/01/24",
-      status: "Approved",
-    },
-    {
-      id: 10,
-      name: "Julia",
-      requestType: "Cows",
-      date_submited: "12/02/23",
-      date_approved: "11/30/24",
-      status: "Approved",
-    },
-  ];
-
-  //Open Modal
   const [openModal, setOpenModal] = useState(false);
-  const handleOpen = () => setOpenModal(true); // Open modal on button click
-  const handleClose = () => setOpenModal(false); // Close modal
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [approvedList, setApprovedList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  //View Specific Request
-  const [selectedRequest, setSelectedReqest] = useState(null);
+  const handleOpen = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
 
-  const handleSelectedRequest = (items) => {
-    setSelectedReqest(items);
-  };
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const fetchApprovedRequests = async () => {
+      try {
+        const response = await axios.get("/api/admin/list-aprroved-request", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setApprovedList(response.data.approvedlist);
+        setIsLoading(false);
+      } catch (err) {
+        setError("Failed to fetch approved requests.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchApprovedRequests();
+  }, []);
 
   return (
-    <>
-      <div className="border-2 grow shadow-lg rounded-lg p-5">
-        <div className="flex justify-between my-2">
-          <h1 className="font-semibold text-xl my-2 uppercase">
-            Approved Request
-          </h1>
-          <div className="flex space-x-4">
-            <form action="" className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Search by Name or ID"
-                className="border p-2 rounded shadow-lg"
-              />
+    <div className="border-2 shadow-lg rounded-lg p-4 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+        <h1 className="font-bold text-lg md:text-xl uppercase">
+          Approved Requests
+        </h1>
+        <form className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+          <input
+            type="text"
+            placeholder="Search by Name or ID"
+            className="border p-2 rounded text-sm w-full md:w-auto"
+          />
+          <Dropdown
+            statusdata={["On-Processed", "Completed", "Approved"]}
+            placeholder="Filter by Status"
+          />
+          <input
+            type="date"
+            className="border p-2 rounded text-sm w-full md:w-auto"
+          />
+        </form>
+      </div>
 
-              <Dropdown
-                statusdata={["On-Processed", "Completed", "Approved"]}
-                placeholder="Filter by Status"
-              />
-
-              <input type="date" className="border p-2 rounded shadow-lg" />
-            </form>
-          </div>
-        </div>
-        <div className="overflow-y-scroll md:text-sm text-xs h-96">
+      {/* Table */}
+      <div className="overflow-x-auto h-96">
+        {isLoading ? (
+          <div className="text-center py-4">Loading...</div>
+        ) : error ? (
+          <div className="text-center text-red-500 py-4">{error}</div>
+        ) : (
           <table className="w-full text-center bg-gray-100 border-collapse">
-            <thead className="bg-white">
+            <thead className="bg-white sticky top-0">
               <tr>
-                <th>Request ID</th>
-                <th>User Name</th>
-                <th>Type of Chicks</th>
-                <th>Requested Date </th>
-                <th>Approval Date</th>
-                <th>Status</th>
-                <th>File Attached</th>
-                <th>Actions</th>
+                <th className="p-2 text-xs md:text-sm">Request ID</th>
+                <th className="p-2 text-xs md:text-sm">User Name</th>
+                <th className="p-2 text-xs md:text-sm">Type of Chicks</th>
+                <th className="p-2 text-xs md:text-sm">Requested Date</th>
+                <th className="p-2 text-xs md:text-sm">Approval Date</th>
+                <th className="p-2 text-xs md:text-sm">Status</th>
+                <th className="p-2 text-xs md:text-sm">File</th>
+                <th className="p-2 text-xs md:text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {approved_list.map((items) => {
-                return (
-                  <tr key={items.id} className="hover:bg-slate-200">
-                    <td>{items.id}</td>
-                    <td>{items.name}</td>
-                    <td>{items.requestType}</td>
-                    <td>{items.date_submited}</td>
-                    <td>{items.date_approved}</td>
-                    <td>
-                      <span className="bg-green-500 p-1 text-white rounded-lg">
-                        {items.status}
-                      </span>
-                    </td>
-                    <td>1</td>
-                    <td className="flex justify-evenly py-2">
-                      <Dropdown
-                        placeholder="Update Status"
-                        statusdata={["On-Processed", "Completed", "Cancel"]}
-                      />
-                      <Button
-                        name="View File"
-                        onClick={() => {
-                          handleOpen(), handleSelectedRequest(items);
-                          s;
-                        }}
-                        hoverbgcolor="hover:bg-orange-400"
-                      />
+              {approvedList.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-200">
+                  <td className="p-2 text-xs md:text-sm">
+                    {item.generatedRequestNo}
+                  </td>
+                  <td className="p-2 text-xs md:text-sm">
+                    {item.requesterName}
+                  </td>
+                  <td className="p-2 text-xs md:text-sm">{item.chicksType}</td>
+                  <td className="p-2 text-xs md:text-sm">
+                    {item.createdAt &&
+                    new Date(item.createdAt) !== "Invalid Date"
+                      ? format(
+                          new Date(item.createdAt),
+                          "MMMM dd, yyyy hh:mm a"
+                        )
+                      : "Invalid Date"}
+                  </td>
+                  <td className="p-2 text-xs md:text-sm">
+                    {item.updatedAt &&
+                    new Date(item.updatedAt) !== "Invalid Date"
+                      ? format(
+                          new Date(item.updatedAt),
+                          "MMMM dd, yyyy hh:mm a"
+                        )
+                      : "Invalid Date"}
+                  </td>
 
-                      <Button name="Submit" />
-                    </td>
-                  </tr>
-                );
-              })}
+                  <td className="p-2 text-xs md:text-sm">
+                    <span
+                      className={`p-1 rounded-lg text-xs md:text-sm ${
+                        item.status === "Approved"
+                          ? "bg-green-500 text-white"
+                          : "bg-yellow-500 text-black"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="p-2 text-xs md:text-sm">
+                    {item.filename || "-"}
+                  </td>
+                  <td className="flex flex-col md:flex-row gap-2 py-2">
+                    <Dropdown
+                      placeholder="Update Status"
+                      statusdata={["On-Processed", "Completed", "Cancel"]}
+                    />
+                    <Button
+                      name="View File"
+                      onClick={() => {
+                        handleOpen();
+                        setSelectedRequest(item);
+                      }}
+                      hoverbgcolor="hover:bg-orange-400"
+                    />
+                    <Button name="Submit" />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </div>
-        <div>
-          {selectedRequest && (
-            <CustomModal
-              open={openModal}
-              handleClose={handleClose}
-            ></CustomModal>
-          )}
-        </div>
+        )}
       </div>
-    </>
+
+      {/* Modal */}
+      {selectedRequest && (
+        <CustomModal open={openModal} handleClose={handleClose} />
+      )}
+    </div>
   );
 };
 
