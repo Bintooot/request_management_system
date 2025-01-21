@@ -7,7 +7,7 @@ import DataCard from "../../components/Card/DataCard";
 
 const RequestRecords = () => {
   const [userRequests, setUserRequests] = useState([]);
-  const [userInquiry, setUserInquiry] = useState([]);
+
   const [latesRequest, setLatestRequest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notificationVisible, setNotificationVisible] = useState(false);
@@ -60,30 +60,6 @@ const RequestRecords = () => {
       }
     };
 
-    const fetchUserInquiry = async () => {
-      try {
-        if (!token) {
-          console.error("No token found, please log in.");
-          return;
-        }
-
-        const inquiryresponse = await axios.get(
-          `/api/user/all-pending-inquiry`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setUserInquiry(inquiryresponse.data.inquiryresponse);
-      } catch (error) {
-        console.error("Error fetching user requests:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const fetchLatestData = async () => {
       try {
         if (!token) {
@@ -106,7 +82,6 @@ const RequestRecords = () => {
     };
 
     fetchLatestData();
-    fetchUserInquiry();
     fetchUserRequests();
   }, []);
 
@@ -126,24 +101,6 @@ const RequestRecords = () => {
     } catch (error) {
       showNotification("Request failed to cancel!", "failed");
       console.error("Error canceling request:", error);
-    }
-  };
-  const deleteInquiry = async (requestId) => {
-    try {
-      await axios.delete(`/api/user/remove-inquiry/${requestId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-
-      setUserInquiry((prevRequests) =>
-        prevRequests.filter((request) => request._id !== requestId)
-      );
-
-      showNotification("Inquiry successfully removed!", "success");
-    } catch (error) {
-      showNotification("Inquiry failed to be removed!", "failed");
-      console.error("Error deleting inquiry:", error);
     }
   };
 
@@ -230,7 +187,10 @@ const RequestRecords = () => {
                         </span>
                       </td>
                       <td className="border-b p-3">
-                        {format(new Date(items.createdAt), "MMMM dd, yyyy")}
+                        {format(
+                          new Date(items.createdAt),
+                          "MMMM dd, yyyy hh:mm a"
+                        )}
                       </td>
                       <td className="border-b p-3">
                         <button
@@ -248,89 +208,6 @@ const RequestRecords = () => {
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <h1 className="text-3xl font-semibold mb-6">Previous Inquiries</h1>
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
-            <select className="w-full sm:w-48 p-2 border shadow-sm">
-              <option value="" disabled selected>
-                Filter Status
-              </option>
-              <option value="Approved">Viewed</option>
-              <option value="Pending">Pending</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Search by Name or ID"
-              className="w-full sm:w-64 p-2 border shadow-sm"
-            />
-          </div>
-
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            {userInquiry.length === 0 ? (
-              <p>No inquiries available.</p>
-            ) : (
-              userInquiry.map((items) => (
-                <div className="border rounded-md p-4" key={items._id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">
-                        {items.subject || "No Subject"}
-                      </h3>
-
-                      <p className="text-sm text-gray-600 mt-1">
-                        {items.message || "No inquiry message available."}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        items.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : items.status === "Approved"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {items.status || "Unknown"}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 text-sm text-gray-500">
-                    Submitted on:{" "}
-                    {items.createdAt
-                      ? format(new Date(items.createdAt), "MMMM dd, yyyy")
-                      : "Unknown date"}
-                  </div>
-
-                  {/* Admin Reply Section */}
-                  {items.adminReply ? (
-                    <div className="mt-4">
-                      <h4 className="font-medium text-gray-700">Admin Reply</h4>
-                      <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
-                        {items.adminReply || "No reply yet."}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-4 text-sm text-gray-600">
-                      No reply yet from the admin.
-                    </div>
-                  )}
-
-                  <div className="mt-2 text-sm text-end">
-                    <button
-                      type="button"
-                      onClick={() => deleteInquiry(items._id)}
-                      className="bg-red-600 text-sm text-white px-2 py-1 rounded-md hover:bg-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
       </div>
