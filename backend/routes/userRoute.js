@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/profile", verifyToken, isUser, async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log("Profile", userId);
+
     const user = await User.findById(userId).select("-password");
 
     if (!user) {
@@ -96,7 +96,32 @@ router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/all-pending-request", verifyToken, async (req, res) => {
+router.get("/current-request", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    const latestRequest = await Request.findOne({
+      requesterid: userId,
+      status: "Pending",
+    })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (!latestRequest) {
+      return res.status(404).json({ message: "No pending requests found." });
+    }
+
+    res.status(200).json(latestRequest);
+  } catch (error) {
+    console.error("Error fetching current requests:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/all-request", verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
@@ -106,7 +131,7 @@ router.get("/all-pending-request", verifyToken, async (req, res) => {
 
     const requestresponse = await Request.find({
       requesterid: userId,
-    });
+    }).sort({ createdAt: -1 });
 
     if (requestresponse.length === 0) {
       return res.status(404).json({ message: "No pending requests found" });
@@ -271,14 +296,37 @@ router.post(
       const existingRequest = await Request.findOne({
         requesterid: userId,
         createdAt: { $gte: currentDate },
-      });
+      }).sort({ createdAt: -1 });
 
       if (existingRequest) {
-        return res.status(400).json({
-          message: "You can only submit one request per week.",
-        });
+        // If the request status is "Pending", don't allow new request submission
+        if (existingRequest.status === "Pending") {
+          return res.status(400).json({
+            message:
+              "You already have a pending request. Please wait for it to be processed.",
+          });
+        }
+
+        // If the request status is "Approved", disallow new request submission within the week
+        if (existingRequest.status === "Approved") {
+          return res.status(400).json({
+            message:
+              "You can only submit one request per week. Please wait a week.",
+          });
+        }
+
+        // If the request was "Canceled" or "Rejected", allow the user to submit a new request
+        if (
+          existingRequest.status === "Canceled" ||
+          existingRequest.status === "Rejected"
+        ) {
+          console.log(
+            "Previous request was canceled or rejected, user can submit a new request."
+          );
+        }
       }
 
+      // Create a new request if none exists or if the previous request was canceled or rejected
       const file = req.file.path;
       const generatedRequestNo = `REQ-${Date.now()}`;
 
@@ -293,8 +341,10 @@ router.post(
         quantity,
         filename: req.file.originalname,
         file,
+        status: "Pending", // New requests are initially set as "Pending"
       });
 
+      // Save the new request
       await newRequest.save();
       res.status(200).json({
         message: "Request submitted successfully",
@@ -392,10 +442,10 @@ router.post(
   }
 );
 
-router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
+router.put("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
   try {
-    const { id } = req.params; // data to delete
-    const userId = req.user?.userId; //requester ID
+    const { id } = req.params;
+    const userId = req.user.userId;
 
     if (!userId) {
       return res
@@ -405,6 +455,8 @@ router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
 
     const request = await Request.findById(id);
 
+    console.log(request);
+
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
     }
@@ -412,12 +464,20 @@ router.delete("/cancel-request/:id", verifyToken, isUser, async (req, res) => {
     if (request.requesterid.toString() !== userId) {
       return res
         .status(403)
-        .json({ message: "You are not authorized to delete this request" });
+        .json({ message: "You are not authorized to canceled this request" });
     }
 
-    await Request.findByIdAndDelete(id);
+    await Request.findByIdAndUpdate(
+      id,
+      {
+        status: "Canceled",
+      },
+      {
+        new: true,
+      }
+    );
 
-    return res.status(200).json({ message: "Request successfully deleted" });
+    return res.status(200).json({ message: "Request successfully canceled" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

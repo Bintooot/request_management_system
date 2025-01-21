@@ -11,7 +11,6 @@ const AdminProfileCard = ({
 }) => {
   return (
     <div className="w-full max-w-full sm:max-w-lg mx-auto bg-gray-100 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-300">
-      {/* Profile Header */}
       <div className="text-center mb-6">
         <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
           Admin Profile

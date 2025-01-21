@@ -13,7 +13,7 @@ const requestSchema = new mongoose.Schema(
     location: { type: String, required: true },
     type: { type: String, default: "Chick Request" },
     reviewedby: { type: String, default: "Not yet reviewed" },
-    status: { type: String, default: "Pending" },
+    status: { type: String, required: true },
     chicksType: { type: String, required: true },
     quantity: { type: Number, required: true },
     numberofrequester: { type: Number, required: true },

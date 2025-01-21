@@ -1,7 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 
-const RequestCard = ({ items, onClick, open, handleClose }) => {
+const RequestCard = ({ items, open, handleClose }) => {
   if (!open) return null;
   const formattedDate = format(new Date(items.createdAt), "MMMM dd, yyyy");
 
@@ -94,18 +94,6 @@ const RequestCard = ({ items, onClick, open, handleClose }) => {
         </div>
 
         <h1 className="text-end p-4 flex justify-between font-semibold text-xl bg-gray-200 border-t">
-          {items.status === "Pending" && (
-            <button
-              type="button"
-              onClick={() => {
-                onClick(items._id);
-                handleClose();
-              }}
-              className="bg-red-600 text-sm text-white px-6 py-2 rounded-md hover:bg-red-700"
-            >
-              Cancel Request
-            </button>
-          )}
           <button
             type="button"
             onClick={handleClose}

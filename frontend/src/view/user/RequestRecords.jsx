@@ -1,61 +1,58 @@
 import React, { useEffect, useState } from "react";
-import CustomModal from "../../components/Modal/CustomModal";
 import RequestCard from "../../components/Card/RequestCard";
 import axios from "axios";
 import Notification from "../../components/Notification/Notification";
-import { useOutletContext } from "react-router-dom";
 import { format } from "date-fns";
+import DataCard from "../../components/Card/DataCard";
 
 const RequestRecords = () => {
   const [userRequests, setUserRequests] = useState([]);
   const [userInquiry, setUserInquiry] = useState([]);
+  const [latesRequest, setLatestRequest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
-  const [statusType, setStatusType] = useState(""); // 'success' or 'error'
+  const [statusType, setStatusType] = useState("");
 
-  //Open Modal
+  // Open Modal
   const [openModal, setOpenModal] = useState(false);
-  const handleOpen = () => setOpenModal(true); // Open modal on button click
-  const handleClose = () => setOpenModal(false); // Close modal
+  const handleOpen = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
 
-  //View Specific Request
+  // View Specific Request
   const [selectedRequest, setSelectedReqest] = useState(null);
-
-  console.log(selectedRequest);
 
   const handleSelectedRequest = (items) => {
     setSelectedReqest(items);
   };
 
   const showNotification = (message, type = "success") => {
-    setStatusMessage(message); // Set the notification message
-    setStatusType(type); // Set the notification type ("success" or "error")
-    setNotificationVisible(true); // Make the notification visible
+    setStatusMessage(message);
+    setStatusType(type);
+    setNotificationVisible(true);
 
     setTimeout(() => {
-      setNotificationVisible(false); // Hide the notification after 5 seconds
+      setNotificationVisible(false);
     }, 5000);
   };
 
   useEffect(() => {
-    const fetchUserRequests = async () => {
-      const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
 
+    const fetchUserRequests = async () => {
       if (!token) {
         console.error("No token found, please log in.");
         return;
       }
 
       try {
-        const response = await axios.get(`/api/user/all-pending-request`, {
+        const response = await axios.get(`/api/user/all-request`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        console.log(response.data.requestresponse);
-        setUserRequests(response.data.requestresponse || []); // Fallback to an empty array
+        setUserRequests(response.data.requestresponse || []);
       } catch (error) {
         console.error("Error fetching user requests:", error);
       } finally {
@@ -65,12 +62,7 @@ const RequestRecords = () => {
 
     const fetchUserInquiry = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-
-        console.log(token);
-
         if (!token) {
-          // Redirect to login page or show an error
           console.error("No token found, please log in.");
           return;
         }
@@ -83,7 +75,7 @@ const RequestRecords = () => {
             },
           }
         );
-        console.log(inquiryresponse);
+
         setUserInquiry(inquiryresponse.data.inquiryresponse);
       } catch (error) {
         console.error("Error fetching user requests:", error);
@@ -91,33 +83,53 @@ const RequestRecords = () => {
         setLoading(false);
       }
     };
+
+    const fetchLatestData = async () => {
+      try {
+        if (!token) {
+          console.error("No token found, please log in.");
+          return;
+        }
+
+        const response = await axios.get(`/api/user/current-request`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log(response.data);
+        setLatestRequest(response.data);
+      } catch (error) {
+        console.error("Error fetching user requests:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestData();
     fetchUserInquiry();
     fetchUserRequests();
   }, []);
 
-  const deleteRequest = async (requestId) => {
+  const cancelRequest = async (requestId) => {
     try {
-      console.log(requestId);
-      await axios.delete(`/api/user/cancel-request/${requestId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-
-      setUserRequests((prevRequests) =>
-        prevRequests.filter((request) => request._id !== requestId)
+      await axios.put(
+        `/api/user/cancel-request/${requestId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
       );
 
-      showNotification("Request successfully cancel!", "success");
+      showNotification("Request successfully canceled!", "success");
     } catch (error) {
       showNotification("Request failed to cancel!", "failed");
-      console.error("Error deleting request:", error);
+      console.error("Error canceling request:", error);
     }
   };
-
   const deleteInquiry = async (requestId) => {
     try {
-      console.log(requestId);
       await axios.delete(`/api/user/remove-inquiry/${requestId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -130,8 +142,8 @@ const RequestRecords = () => {
 
       showNotification("Inquiry successfully removed!", "success");
     } catch (error) {
-      showNotification("Inquiry failed to removed!", "failed");
-      console.error("Error deleting request:", error);
+      showNotification("Inquiry failed to be removed!", "failed");
+      console.error("Error deleting inquiry:", error);
     }
   };
 
@@ -141,6 +153,12 @@ const RequestRecords = () => {
     <main className="flex justify-center flex-col p-4 sm:p-8">
       {notificationVisible && (
         <Notification message={statusMessage} type={statusType} />
+      )}
+
+      {latesRequest.length === 0 ? (
+        <p>No data available.</p>
+      ) : (
+        <DataCard data={latesRequest} onClick={cancelRequest} />
       )}
 
       <div className="my-4">
@@ -179,43 +197,55 @@ const RequestRecords = () => {
                 </tr>
               </thead>
               <tbody>
-                {userRequests.map((items) => (
-                  <tr key={items._id} className="text-xs sm:text-sm">
-                    <td className="border-b p-3">{items.generatedRequestNo}</td>
-                    <td className="border-b p-3">{items.requesterName}</td>
-                    <td className="border-b p-3 ">{items.reviewedby}</td>
-                    <td className="border-b p-3">{items.chicksType}</td>
-                    <td className="border-b p-3">{items.numberofrequester}</td>
-                    <td className="border-b p-3">{items.quantity}</td>
-                    <td className="border-b p-3">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          items.status === "Approved"
-                            ? "bg-green-100 text-green-800"
-                            : items.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {items.status}
-                      </span>
-                    </td>
-                    <td className="border-b p-3">
-                      {format(new Date(items.createdAt), "MMMM dd, yyyy")}
-                    </td>
-                    <td className="border-b p-3">
-                      <button
-                        onClick={() => {
-                          handleSelectedRequest(items);
-                          handleOpen();
-                        }}
-                        className="bg-green-900 text-xs text-white p-1 rounded hover:bg-green-700"
-                      >
-                        Details
-                      </button>
+                {userRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="p-3 text-center">
+                      No requests available.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  userRequests.map((items) => (
+                    <tr key={items._id} className="text-xs sm:text-sm">
+                      <td className="border-b p-3">
+                        {items.generatedRequestNo}
+                      </td>
+                      <td className="border-b p-3">{items.requesterName}</td>
+                      <td className="border-b p-3 ">{items.reviewedby}</td>
+                      <td className="border-b p-3">{items.chicksType}</td>
+                      <td className="border-b p-3">
+                        {items.numberofrequester}
+                      </td>
+                      <td className="border-b p-3">{items.quantity}</td>
+                      <td className="border-b p-3">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            items.status === "Approved"
+                              ? "bg-green-100 text-green-800"
+                              : items.status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {items.status}
+                        </span>
+                      </td>
+                      <td className="border-b p-3">
+                        {format(new Date(items.createdAt), "MMMM dd, yyyy")}
+                      </td>
+                      <td className="border-b p-3">
+                        <button
+                          onClick={() => {
+                            handleSelectedRequest(items);
+                            handleOpen();
+                          }}
+                          className="bg-green-900 text-xs text-white p-1 rounded hover:bg-green-700"
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -239,64 +269,68 @@ const RequestRecords = () => {
           </div>
 
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {userInquiry.map((items) => (
-              <div className="border rounded-md p-4" key={items._id}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium">
-                      {items.subject || "No Subject"}
-                    </h3>
+            {userInquiry.length === 0 ? (
+              <p>No inquiries available.</p>
+            ) : (
+              userInquiry.map((items) => (
+                <div className="border rounded-md p-4" key={items._id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">
+                        {items.subject || "No Subject"}
+                      </h3>
 
-                    <p className="text-sm text-gray-600 mt-1">
-                      {items.message || "No inquiry message available."}
-                    </p>
-                  </div>
-
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      items.status === "Pending"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : items.status === "Approved"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {items.status || "Unknown"}
-                  </span>
-                </div>
-
-                <div className="mt-2 text-sm text-gray-500">
-                  Submitted on:{" "}
-                  {items.createdAt
-                    ? format(new Date(items.createdAt), "MMMM dd, yyyy")
-                    : "Unknown date"}
-                </div>
-
-                {/* Admin Reply Section */}
-                {items.adminReply ? (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-gray-700">Admin Reply</h4>
-                    <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
-                      {items.adminReply || "No reply yet."}
+                      <p className="text-sm text-gray-600 mt-1">
+                        {items.message || "No inquiry message available."}
+                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 text-sm text-gray-600">
-                    No reply yet from the admin.
-                  </div>
-                )}
 
-                <div className="mt-2 text-sm text-end">
-                  <button
-                    type="button"
-                    onClick={() => deleteInquiry(items._id)}
-                    className="bg-red-600 text-sm text-white px-2 py-1 rounded-md hover:bg-red-700"
-                  >
-                    Remove
-                  </button>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        items.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : items.status === "Approved"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {items.status || "Unknown"}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 text-sm text-gray-500">
+                    Submitted on:{" "}
+                    {items.createdAt
+                      ? format(new Date(items.createdAt), "MMMM dd, yyyy")
+                      : "Unknown date"}
+                  </div>
+
+                  {/* Admin Reply Section */}
+                  {items.adminReply ? (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-gray-700">Admin Reply</h4>
+                      <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
+                        {items.adminReply || "No reply yet."}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 text-sm text-gray-600">
+                      No reply yet from the admin.
+                    </div>
+                  )}
+
+                  <div className="mt-2 text-sm text-end">
+                    <button
+                      type="button"
+                      onClick={() => deleteInquiry(items._id)}
+                      className="bg-red-600 text-sm text-white px-2 py-1 rounded-md hover:bg-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -307,7 +341,6 @@ const RequestRecords = () => {
             handleClose={handleClose}
             open={openModal}
             items={selectedRequest}
-            onClick={deleteRequest}
           />
         )}
       </div>
