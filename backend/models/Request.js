@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import moment from "moment-timezone";
 
+// Define the Request schema
 const requestSchema = new mongoose.Schema(
   {
     generatedRequestNo: {
@@ -8,27 +9,90 @@ const requestSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    requesterid: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    requesterName: { type: String, required: true },
-    location: { type: String, required: true },
-    type: { type: String, default: "Chick Request" },
-    reviewedby: { type: String, default: "Not yet reviewed" },
-    status: { type: String, required: true },
-    chicksType: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    numberofrequester: { type: Number, required: true },
-    description: { type: String, required: true },
-    adminFeedback: { type: String, default: "" },
-    createdAt: { type: Date },
-    filename: { type: String, required: true },
-    file: { type: String }, // New field for storing file path
+    requesterid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    requesterName: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+      required: true,
+    },
+    position: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    contactnumber: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      default: "Chick Request",
+    },
+    reviewedby: {
+      type: String,
+      default: "Not yet reviewed",
+    },
+    status: {
+      type: String,
+      required: true,
+      default: "Pending",
+      index: true,
+    },
+    chicksType: {
+      type: String,
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    numberofrequester: {
+      type: Number,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    adminFeedback: {
+      type: String,
+      default: null,
+    },
+    deliveryDate: {
+      type: Date,
+      required: false,
+      validate: {
+        validator: function (value) {
+          return !value || value >= Date.now();
+        },
+        message: "Delivery date cannot be in the past.",
+      },
+      default: null,
+    },
+    filename: {
+      type: String,
+      required: true,
+    },
+    file: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Pre-save hook to set `createdAt` to local time
 requestSchema.pre("save", function (next) {
   if (!this.createdAt) {
     this.createdAt = moment.tz(Date.now(), "Asia/Manila").toDate();

@@ -22,12 +22,12 @@ const ListofRequest = ({ onClick, request }) => {
           <div className="col-span-3 flex flex-col items-center justify-center">
             <h4 className="font-semibold text-sm">Status</h4>
             <p
-              className={`px-3 py-1 rounded-full text-white text-sm ${
+              className={`px-3 py-1 rounded-md text-white text-sm ${
                 user_list.status === "Approved"
                   ? "bg-green-500"
                   : user_list.status === "Rejected"
                   ? "bg-red-500"
-                  : "bg-blue-400"
+                  : "bg-orange-400"
               }`}
             >
               {user_list.status}

@@ -113,7 +113,7 @@ const RequestRecords = () => {
       )}
 
       {latesRequest.length === 0 ? (
-        <p>No data available.</p>
+        <p className="text-center">No data available.</p>
       ) : (
         <DataCard data={latesRequest} onClick={cancelRequest} />
       )}

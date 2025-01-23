@@ -105,7 +105,7 @@ router.get("/current-request", verifyToken, async (req, res) => {
 
     const latestRequest = await Request.findOne({
       requesterid: userId,
-      status: "Pending",
+      status: { $in: ["Pending", "Approved"] },
     })
       .sort({ createdAt: -1 })
       .exec();
@@ -273,6 +273,9 @@ router.post(
   async (req, res) => {
     const {
       requesterName,
+      position,
+      email,
+      contactnumber,
       chicksType,
       location,
       numberofrequester,
@@ -299,7 +302,6 @@ router.post(
       }).sort({ createdAt: -1 });
 
       if (existingRequest) {
-        // If the request status is "Pending", don't allow new request submission
         if (existingRequest.status === "Pending") {
           return res.status(400).json({
             message:
@@ -307,7 +309,6 @@ router.post(
           });
         }
 
-        // If the request status is "Approved", disallow new request submission within the week
         if (existingRequest.status === "Approved") {
           return res.status(400).json({
             message:
@@ -315,7 +316,6 @@ router.post(
           });
         }
 
-        // If the request was "Canceled" or "Rejected", allow the user to submit a new request
         if (
           existingRequest.status === "Canceled" ||
           existingRequest.status === "Rejected"
@@ -326,7 +326,6 @@ router.post(
         }
       }
 
-      // Create a new request if none exists or if the previous request was canceled or rejected
       const file = req.file.path;
       const generatedRequestNo = `REQ-${Date.now()}`;
 
@@ -334,6 +333,9 @@ router.post(
         generatedRequestNo,
         requesterid: userId,
         requesterName,
+        email,
+        position,
+        contactnumber,
         chicksType,
         location,
         numberofrequester,
@@ -341,7 +343,7 @@ router.post(
         quantity,
         filename: req.file.originalname,
         file,
-        status: "Pending", // New requests are initially set as "Pending"
+        status: "Pending",
       });
 
       // Save the new request

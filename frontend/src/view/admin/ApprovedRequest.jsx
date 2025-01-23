@@ -38,8 +38,8 @@ const ApprovedRequest = () => {
   return (
     <div className="border-2 shadow-lg rounded-lg p-4 md:p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-        <h1 className="font-bold text-lg md:text-xl uppercase">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0">
+        <h1 className="font-bold text-lg md:text-xl uppercase text-center md:text-left">
           Approved Requests
         </h1>
         <form className="flex flex-col md:flex-row gap-2 w-full md:w-auto">

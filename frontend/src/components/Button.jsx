@@ -5,7 +5,7 @@ const Button = ({ name, hoverbgcolor, onClick }) => {
     <>
       <button
         onClick={onClick}
-        className={`p-2 border-2 bg-gray-200  ${hoverbgcolor} hover:text-white rounded-lg shadow-md `}
+        className={`p-1 border-2 bg-gray-200 w-32  ${hoverbgcolor} hover:text-white rounded-lg shadow-md `}
       >
         <small>{name}</small>
       </button>

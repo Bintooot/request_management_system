@@ -131,14 +131,39 @@ router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
 });
 
 router.put("/update-request-status/:id", async (req, res) => {
-  const { status, adminFeedback, reviewedby } = req.body;
+  const { status, adminFeedback, reviewedby, deliveryDate } = req.body;
   const requestId = req.params.id;
 
-  if (!status || !adminFeedback) {
-    return res
-      .status(400)
-      .json({ error: "Status and admin feedback are required." });
+  if (!status) {
+    return res.status(400).json({
+      error: "Status is required.",
+    });
   }
+
+  if (!adminFeedback) {
+    return res.status(400).json({
+      error: "Admin feedback is required.",
+    });
+  }
+
+  // If the status is "Rejected", we don't require a delivery date
+  if (status === "Rejected" && deliveryDate) {
+    return res.status(400).json({
+      error: "Delivery Date should not be provided for rejected requests.",
+    });
+  }
+
+  // If the status is not "Rejected", the delivery date is required
+  if (status !== "Rejected" && !deliveryDate) {
+    return res.status(400).json({
+      error: "Delivery Date is required.",
+    });
+  }
+
+  // Format the delivery date only if it's provided
+  const formattedDeliveryDate = deliveryDate
+    ? new Date(deliveryDate).toISOString()
+    : null;
 
   try {
     const request = await Request.findById(requestId);
@@ -147,9 +172,15 @@ router.put("/update-request-status/:id", async (req, res) => {
       return res.status(404).json({ error: "Request not found." });
     }
 
+    // Update the request
     request.status = status;
     request.adminFeedback = adminFeedback;
     request.reviewedby = reviewedby;
+
+    // Only update deliveryDate if it's provided
+    if (formattedDeliveryDate) {
+      request.deliveryDate = formattedDeliveryDate;
+    }
 
     await request.save();
 

@@ -227,7 +227,7 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
-                          activity.status === "Completed"
+                          activity.status === "Approved"
                             ? "bg-green-100 text-green-800"
                             : activity.status === "Pending"
                             ? "bg-yellow-100 text-yellow-800"

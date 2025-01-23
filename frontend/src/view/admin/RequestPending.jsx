@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ListofRequest from "../../components/Card/ListofRequest";
 import Button from "../../components/Button";
+import Notification from "../../components/Notification/Notification";
 import Dropdown from "../../components/Dropdown";
 import axios from "axios";
 import { format } from "date-fns";
@@ -10,14 +11,35 @@ const RequestPending = () => {
   const { adminData } = useOutletContext() || { adminData: null };
   const [updateStatus, setUpdateStatus] = useState("");
   const [adminFeedback, setAdminFeedback] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
   const [viewRequest, setViewRequest] = useState(null);
   const [listPendingRequest, setListPendingRequest] = useState([]);
 
-  const statusHandler = (newStatus) => {
-    setUpdateStatus(newStatus);
+  // For notifcation
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success");
 
-    if (viewRequest) {
-      setViewRequest({ ...viewRequest, status: newStatus });
+  const showNotification = (message, type = "success") => {
+    setStatusMessage(message);
+    setStatusType(type);
+    setNotificationVisible(true);
+
+    setTimeout(() => {
+      setNotificationVisible(false);
+    }, 5000);
+  };
+
+  const statusHandler = (newStatus) => {
+    if (newStatus === updateStatus) {
+      setUpdateStatus("");
+      setTimeout(() => setUpdateStatus(newStatus), 0);
+
+      if (viewRequest) {
+        setViewRequest({ ...viewRequest, status: newStatus });
+      }
+    } else {
+      setUpdateStatus(newStatus);
     }
   };
 
@@ -29,14 +51,16 @@ const RequestPending = () => {
   const submitStatusUpdate = async () => {
     if (!viewRequest) return;
 
-    const token = localStorage.getItem("authToken");
+    // Check if the deliveryDate is in the past
+    const currentDate = new Date();
+    const selectedDeliveryDate = new Date(deliveryDate);
 
-    console.log(
-      updateStatus,
-      adminFeedback,
-      viewRequest._id,
-      adminData.username
-    );
+    if (selectedDeliveryDate < currentDate) {
+      showNotification("Delivery date cannot be in the past.", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
 
     try {
       const response = await axios.put(
@@ -45,6 +69,7 @@ const RequestPending = () => {
           status: updateStatus,
           adminFeedback,
           reviewedby: adminData.username,
+          deliveryDate,
         },
         {
           headers: {
@@ -53,20 +78,19 @@ const RequestPending = () => {
         }
       );
 
+      setAdminFeedback("");
+      setDeliveryDate(null);
+      setViewRequest(null);
+      showNotification(response.data.message, "success");
       setListPendingRequest((prevRequests) =>
         prevRequests.filter((req) => req._id !== viewRequest._id)
       );
-
-      setViewRequest((prevViewRequest) => ({
-        ...prevViewRequest,
-        status: updateStatus,
-        adminFeedback: adminFeedback,
-      }));
-
-      alert("Request status updated successfully!");
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update request status.");
+
+      const errorMessage =
+        error.response?.data?.error || "Failed to update request status.";
+      showNotification(errorMessage, "error");
     }
   };
 
@@ -107,57 +131,99 @@ const RequestPending = () => {
         </div>
       </div>
 
+      {notificationVisible && (
+        <Notification
+          message={statusMessage} // Pass the message to display
+          type={statusType} // Pass the type of notification (success or error)
+        />
+      )}
+
       {/* Request Details */}
       <div className="md:w-2/3 w-full md:pl-6 pl-0">
         {viewRequest ? (
-          <div className="border-2 shadow-lg rounded-lg p-6 ">
-            <h1 className="font-semibold text-2xl mb-4">Request Details</h1>
-
-            {/* User Info */}
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-lg font-medium">Requester Name:</h2>
-                <p className="text-sm">{viewRequest.requesterName}</p>
-              </div>
-              <div>
-                <h2 className="text-lg font-medium">Request ID:</h2>
-                <p className="text-sm">{viewRequest.generatedRequestNo}</p>
-              </div>
-              <div>
-                <p className="font-medium">Status:</p>
-                <small
-                  className={`rounded px-2 text-white ${
-                    updateStatus === "Approved"
-                      ? "bg-green-500"
-                      : updateStatus === "Rejected"
-                      ? "bg-red-500"
-                      : "bg-blue-400"
-                  }`}
-                >
-                  {updateStatus || "Select a Status to update"}
-                </small>
+          <div className="border-2 shadow-lg rounded-lg p-6">
+            <h1 className="font-semibold text-2xl text-center uppercase mb-4">
+              Request Details
+            </h1>
+            <hr className="my-2" />
+            {/* User Info Section */}
+            <div className="mb-6">
+              <h2 className="font-semibold text-lg mb-3">User Info</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium">Requester Name:</h3>
+                  <p className="text-sm">{viewRequest.requesterName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Email:</h3>
+                  <p className="text-sm">{viewRequest.email}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Contact Number:</h3>
+                  <p className="text-sm">{viewRequest.contactnumber}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Position:</h3>
+                  <p className="text-sm">{viewRequest.position}</p>
+                </div>
               </div>
             </div>
 
-            {/* Request Info */}
-            <div className="flex flex-col mb-4">
-              <h2 className="font-medium">Type of Chicks:</h2>
-              <p>{viewRequest.chicksType}</p>
-              <h2 className="font-medium">Quantity:</h2>
-              <p>{viewRequest.quantity}</p>
-              <h2 className="font-medium">Date Requested:</h2>
-              <p>
-                {format(
-                  new Date(viewRequest.createdAt),
-                  "MMMM dd, yyyy hh:mm a"
-                )}
-              </p>
+            {/* Request Details Section */}
+            <div className="mb-6">
+              <h2 className="font-semibold text-lg mb-3">Request Details</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium">Request ID:</h3>
+                  <p className="text-sm">{viewRequest.generatedRequestNo}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Type of Chicks:</h3>
+                  <p className="text-sm">{viewRequest.chicksType}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Number of Person:</h3>
+                  <p className="text-sm">{viewRequest.numberofrequester}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Quantity:</h3>
+                  <p className="text-sm">{viewRequest.quantity}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Date Requested:</h3>
+                  <p className="text-sm">
+                    {format(
+                      new Date(viewRequest.createdAt),
+                      "MMMM dd, yyyy hh:mm a"
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium">Status:</p>
+                  <small
+                    className={`rounded px-2 text-white ${
+                      updateStatus === "Approved"
+                        ? "bg-green-500"
+                        : updateStatus === "Rejected"
+                        ? "bg-red-500"
+                        : "bg-blue-400"
+                    }`}
+                  >
+                    {updateStatus || "Pending"}
+                  </small>
+                  {updateStatus !== viewRequest.status && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Status has been updated but not yet submitted.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Attached File */}
-            <div className="my-4">
-              <h2 className="font-medium mb-2">Attached File:</h2>
-              <div className="my-2">
+            {/* Attached File Section */}
+            <div className="mb-6">
+              <h2 className="font-semibold text-lg mb-3">Attached File</h2>
+              <div>
                 {viewRequest.file ? (
                   <>
                     {viewRequest.filename.endsWith(".pdf") ? (
@@ -202,20 +268,9 @@ const RequestPending = () => {
               </div>
             </div>
 
-            {/* Description */}
-            <div className="my-4">
-              <h2 className="font-medium mb-2">Description:</h2>
-              <textarea
-                className="w-full border-2 h-[20vh] resize-none p-2 text-sm"
-                value={viewRequest.description}
-                readOnly
-              ></textarea>
-            </div>
-
-            {/* Admin Feedback */}
-            <div className="my-4">
-              <hr className="border-black mb-4" />
-              <h2 className="font-medium">Admin Feedback:</h2>
+            {/* Admin Feedback Form Section */}
+            <div className="mb-6">
+              <h2 className="font-semibold text-lg mb-3">Admin Feedback</h2>
               <textarea
                 className="w-full border-2 h-[20vh] resize-none p-2 text-sm"
                 value={adminFeedback}
@@ -224,17 +279,34 @@ const RequestPending = () => {
               ></textarea>
             </div>
 
-            {/* Actions */}
-            <div className="flex justify-between gap-4 mt-6">
-              <Dropdown
-                statusdata={[
-                  "Select a Status to update",
-                  "Approved",
-                  "Rejected",
-                ]}
-                onChange={statusHandler}
-                value={updateStatus || ""}
-              />
+            <div className="mb-6 flex gap-2 items-center justify-between">
+              <div>
+                <label className="font-medium text-sm">
+                  Expected Delivery Date:
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border-2 p-2 text-sm"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Dropdown
+                  statusdata={["Approved", "Rejected"]}
+                  onChange={statusHandler}
+                />
+              </div>
+            </div>
+
+            {updateStatus !== viewRequest.status && (
+              <p className="text-green-500 text-xs mt-2">
+                Status updated to "{updateStatus}", but not yet submitted.
+              </p>
+            )}
+
+            <div className="text-end">
               <Button
                 name="Submit"
                 hoverbgcolor="hover:bg-green-500"

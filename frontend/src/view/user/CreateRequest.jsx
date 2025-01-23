@@ -17,6 +17,9 @@ const CreateRequest = () => {
   // Requester Data info
   const [requesterid, setRequesterid] = useState("");
   const [requesterName, setRequesterName] = useState("");
+  const [postion, setPosition] = useState("");
+  const [contactnumber, setContactNumber] = useState("");
+  const [email, setEmail] = useState("");
 
   // Request Details
   const [chicksType, setChicksType] = useState("");
@@ -30,6 +33,9 @@ const CreateRequest = () => {
   console.log({
     requesterid,
     requesterName,
+    postion,
+    contactnumber,
+    email,
     chicksType,
     location,
     quantity,
@@ -43,6 +49,9 @@ const CreateRequest = () => {
     if (user?.accountid && user?.username) {
       setRequesterid(user.accountid);
       setRequesterName(user.username);
+      setContactNumber(user.contactnumber);
+      setEmail(user.email);
+      setPosition(user.position);
     }
 
     if (numberofrequester !== "") {
@@ -74,21 +83,20 @@ const CreateRequest = () => {
   };
 
   const showNotification = (message, type = "success") => {
-    setStatusMessage(message); // Set the notification message
-    setStatusType(type); // Set the notification type ("success" or "error")
-    setNotificationVisible(true); // Make the notification visible
+    setStatusMessage(message);
+    setStatusType(type);
+    setNotificationVisible(true);
 
     setTimeout(() => {
-      setNotificationVisible(false); // Hide the notification after 5 seconds
+      setNotificationVisible(false);
     }, 5000);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setValidationErrors({}); // Clear any previous validation errors
+    setValidationErrors({});
 
-    // Check for required fields
     const errors = {};
     if (!chicksType) errors.chicksType = "Chicks type is required";
     if (!location) errors.location = "Location is required";
@@ -97,7 +105,6 @@ const CreateRequest = () => {
     if (!description) errors.description = "Description is required";
     if (!file) errors.file = "File is required";
 
-    // If there are any validation errors, show them and stop the submission
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setLoading(false);
@@ -107,6 +114,9 @@ const CreateRequest = () => {
 
     const formData = new FormData();
     formData.append("requesterName", requesterName);
+    formData.append("position", postion);
+    formData.append("contactnumber", contactnumber);
+    formData.append("email", email);
     formData.append("chicksType", chicksType);
     formData.append("location", location);
     formData.append("numberofrequester", numberofrequester);
@@ -116,7 +126,7 @@ const CreateRequest = () => {
     if (file) formData.append("file", file); // Attach the file if selected
 
     const token = localStorage.getItem("authToken");
-    console.log(token);
+    console.log(formData);
 
     try {
       const response = await axios.post(
@@ -239,12 +249,36 @@ const CreateRequest = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Position
+                  PVO Position
                 </label>
                 <input
                   type="text"
                   disabled
                   value={user.position}
+                  className="mt-1 uppercase block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Contact Number
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={user.contactnumber}
+                  className="mt-1 uppercase block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={user.email}
                   className="mt-1 uppercase block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
