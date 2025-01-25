@@ -51,7 +51,6 @@ const RequestPending = () => {
   const submitStatusUpdate = async () => {
     if (!viewRequest) return;
 
-    // Check if the deliveryDate is in the past
     const currentDate = new Date();
     const selectedDeliveryDate = new Date(deliveryDate);
 
@@ -70,6 +69,7 @@ const RequestPending = () => {
           adminFeedback,
           reviewedby: adminData.username,
           deliveryDate,
+          approvedRequest: currentDate,
         },
         {
           headers: {

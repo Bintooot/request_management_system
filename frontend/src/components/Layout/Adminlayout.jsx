@@ -9,18 +9,31 @@ const AdminLayout = () => {
   const [Open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [adminData, setAdminData] = useState(null); // State to store admin data
+  const [adminData, setAdminData] = useState(null);
 
   const navigate = useNavigate();
 
-  // Toggle the visibility of the sidebar
   const togglehandler = () => {
     setOpen(!Open);
   };
 
-  // Close the sidebar when a navigation link is clicked
   const handleLinkClick = () => {
     setOpen(false);
+  };
+
+  const checkTokenExpiration = () => {
+    const token = localStorage.getItem("authToken");
+    const expirationTime = localStorage.getItem("tokenExpirationTime");
+
+    if (token && expirationTime) {
+      const currentTime = Date.now();
+
+      if (currentTime > expirationTime) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("tokenExpirationTime");
+        navigate("/login");
+      }
+    }
   };
 
   useEffect(() => {
@@ -55,6 +68,7 @@ const AdminLayout = () => {
     };
 
     fetchAdminData();
+    checkTokenExpiration();
   }, []);
 
   const handleLogout = () => {

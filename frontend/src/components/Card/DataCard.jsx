@@ -89,15 +89,25 @@ const DataCard = ({ data, onClick }) => {
               <p className="text-gray-500 text-sm">Status</p>
               <span
                 className={`inline-flex px-3 py-1 text-sm rounded-full ${
-                  data.status === "Pending"
+                  data.status === "Approved"
+                    ? "bg-blue-100 text-blue-800"
+                    : data.status === "Pending"
                     ? "bg-yellow-100 text-yellow-800"
-                    : data.status === "Approved"
+                    : data.status === "Out for Delivery"
+                    ? "bg-orange-100 text-orange-800"
+                    : data.status === "Completed"
                     ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
+                    : ""
                 }`}
               >
                 {data.status}
               </span>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Expected Delivery Date</p>
+              <p className="font-medium text-gray-800">
+                {ExpectedDate(data.deliveryDate)}
+              </p>
             </div>
             <div className="col-span-3">
               <p className="text-gray-500 text-sm">Description</p>
@@ -143,15 +153,15 @@ const DataCard = ({ data, onClick }) => {
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Admin Feedback</p>
+              <p className="text-gray-500 text-sm">Reviewed Date:</p>
               <p className="font-medium text-gray-800">
-                {data.adminFeedback || "N/A"}
+                {ExpectedDate(data.reviewedDate)}
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Expected Delivery Date:</p>
+              <p className="text-gray-500 text-sm">Admin Feedback</p>
               <p className="font-medium text-gray-800">
-                {ExpectedDate(data.deliveryDate)}
+                {data.adminFeedback || "N/A"}
               </p>
             </div>
           </div>

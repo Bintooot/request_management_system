@@ -120,8 +120,8 @@ router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
 router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
   try {
     const approvedlist = await Request.find({
-      status: "Approved",
-    });
+      status: { $in: ["Approved", "Out for Delivery"] },
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({ approvedlist });
   } catch (error) {
@@ -146,24 +146,24 @@ router.put("/update-request-status/:id", async (req, res) => {
     });
   }
 
-  // If the status is "Rejected", we don't require a delivery date
   if (status === "Rejected" && deliveryDate) {
     return res.status(400).json({
       error: "Delivery Date should not be provided for rejected requests.",
     });
   }
 
-  // If the status is not "Rejected", the delivery date is required
   if (status !== "Rejected" && !deliveryDate) {
     return res.status(400).json({
-      error: "Delivery Date is required.",
+      error: "Delivery Date is required for approved requests.",
     });
   }
 
-  // Format the delivery date only if it's provided
   const formattedDeliveryDate = deliveryDate
     ? new Date(deliveryDate).toISOString()
     : null;
+
+  // gi kuha ang current date.
+  const statusChangedAt = new Date().toISOString();
 
   try {
     const request = await Request.findById(requestId);
@@ -172,20 +172,23 @@ router.put("/update-request-status/:id", async (req, res) => {
       return res.status(404).json({ error: "Request not found." });
     }
 
-    // Update the request
     request.status = status;
     request.adminFeedback = adminFeedback;
     request.reviewedby = reviewedby;
 
-    // Only update deliveryDate if it's provided
     if (formattedDeliveryDate) {
       request.deliveryDate = formattedDeliveryDate;
+    }
+
+    // either approved or rejected ang request, e save ang date.
+    if (status === "Approved" || status === "Rejected") {
+      request.reviewedDate = statusChangedAt;
     }
 
     await request.save();
 
     res.status(200).json({
-      message: "Request status updated successfully!",
+      message: `Request status updated successfully to '${status}'!`,
       updatedRequest: request,
     });
   } catch (error) {
@@ -195,5 +198,50 @@ router.put("/update-request-status/:id", async (req, res) => {
       .json({ error: "Server error, failed to update request status." });
   }
 });
+
+router.put(
+  "/update-approved-request/:id",
+  verifyToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { updateStatus } = req.body;
+      const requestId = req.params.id;
+      console.log(updateStatus);
+      console.log(requestId);
+
+      if (!updateStatus) {
+        return res.status(400).json({
+          error: "Status is required.",
+        });
+      }
+
+      const currentDate = new Date().toISOString();
+
+      const selectedRequest = await Request.findById(requestId);
+
+      console.log(selectedRequest);
+
+      if (!selectedRequest) {
+        return res.status(404).json({ error: "Request not found." });
+      }
+
+      selectedRequest.status = updateStatus;
+      selectedRequest.outForDeliveryDate = currentDate;
+
+      await selectedRequest.save();
+
+      res.status(200).json({
+        message: `Request status updated successfully to '${updateStatus}'!`,
+        updatedRequest: selectedRequest,
+      });
+    } catch (error) {
+      console.error("Error updating request:", error);
+      res
+        .status(500)
+        .json({ error: "Server error, failed to update request status." });
+    }
+  }
+);
 
 export default router;

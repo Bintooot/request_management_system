@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
-import CustomModal from "../../components/Modal/CustomModal";
 import Dropdown from "../../components/Dropdown";
 import axios from "axios";
 import { format } from "date-fns";
+import RequestCard from "../../components/Card/RequestCard";
 
 const ApprovedRequest = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -11,6 +11,7 @@ const ApprovedRequest = () => {
   const [approvedList, setApprovedList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [updateStatus, setUpdateStatus] = useState("");
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
@@ -24,6 +25,7 @@ const ApprovedRequest = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log(response.data.approvedlist[0]._id);
         setApprovedList(response.data.approvedlist);
         setIsLoading(false);
       } catch (err) {
@@ -34,6 +36,42 @@ const ApprovedRequest = () => {
 
     fetchApprovedRequests();
   }, []);
+
+  const handleSubmit = async (request) => {
+    try {
+      if (!request) {
+        alert("No request selected.");
+        return;
+      }
+
+      if (!updateStatus) {
+        alert("Select a kind of Status to Update.");
+        return;
+      }
+      console.log(request.generatedRequestNo);
+      console.log(updateStatus);
+      console.log(request._id);
+
+      const response = await axios.put(
+        `/api/admin/update-approved-request/${request._id}`,
+        {
+          updateStatus,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      alert(`Request ID: ${request.generatedRequestNo}`);
+    } catch (error) {
+      console.error("Error updating:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to update request.";
+      alert(errorMessage);
+    }
+  };
 
   return (
     <div className="border-2 shadow-lg rounded-lg p-4 md:p-6">
@@ -71,23 +109,24 @@ const ApprovedRequest = () => {
               <tr>
                 <th className="p-2 text-xs md:text-sm">Request ID</th>
                 <th className="p-2 text-xs md:text-sm">User Name</th>
+                <th className="p-2 text-xs md:text-sm">Reviewed By</th>
                 <th className="p-2 text-xs md:text-sm">Type of Chicks</th>
                 <th className="p-2 text-xs md:text-sm">Requested Date</th>
                 <th className="p-2 text-xs md:text-sm">Approval Date</th>
                 <th className="p-2 text-xs md:text-sm">Status</th>
-                <th className="p-2 text-xs md:text-sm">File</th>
                 <th className="p-2 text-xs md:text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
               {approvedList.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-200">
+                <tr key={item._id} className="hover:bg-slate-200">
                   <td className="p-2 text-xs md:text-sm">
                     {item.generatedRequestNo}
                   </td>
                   <td className="p-2 text-xs md:text-sm">
                     {item.requesterName}
                   </td>
+                  <td className="p-2 text-xs md:text-sm">{item.reviewedby}</td>
                   <td className="p-2 text-xs md:text-sm">{item.chicksType}</td>
                   <td className="p-2 text-xs md:text-sm">
                     {item.createdAt &&
@@ -102,7 +141,7 @@ const ApprovedRequest = () => {
                     {item.updatedAt &&
                     new Date(item.updatedAt) !== "Invalid Date"
                       ? format(
-                          new Date(item.updatedAt),
+                          new Date(item.reviewedDate),
                           "MMMM dd, yyyy hh:mm a"
                         )
                       : "Invalid Date"}
@@ -119,23 +158,28 @@ const ApprovedRequest = () => {
                       {item.status}
                     </span>
                   </td>
-                  <td className="p-2 text-xs md:text-sm">
-                    {item.filename || "-"}
-                  </td>
+
                   <td className="flex flex-col md:flex-row gap-2 py-2">
                     <Dropdown
-                      placeholder="Update Status"
-                      statusdata={["On-Processed", "Completed", "Cancel"]}
+                      statusdata={["Out for Delivery", "Completed"]}
+                      onChange={(value) => setUpdateStatus(value)}
                     />
                     <Button
-                      name="View File"
+                      name="Full Details"
                       onClick={() => {
                         handleOpen();
                         setSelectedRequest(item);
                       }}
                       hoverbgcolor="hover:bg-orange-400"
                     />
-                    <Button name="Submit" />
+                    <Button
+                      name="Submit"
+                      onClick={() => {
+                        {
+                          handleSubmit(item);
+                        }
+                      }}
+                    />
                   </td>
                 </tr>
               ))}
@@ -146,10 +190,13 @@ const ApprovedRequest = () => {
 
       {/* Modal */}
       {selectedRequest && (
-        <CustomModal open={openModal} handleClose={handleClose} />
+        <RequestCard
+          handleClose={handleClose}
+          open={openModal}
+          items={selectedRequest}
+        />
       )}
     </div>
   );
 };
-
 export default ApprovedRequest;

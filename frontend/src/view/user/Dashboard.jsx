@@ -228,10 +228,14 @@ const Dashboard = () => {
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
                           activity.status === "Approved"
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-blue-100 text-blue-800"
                             : activity.status === "Pending"
                             ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                            : activity.status === "Out for Delivery"
+                            ? "bg-orange-100 text-orange-800"
+                            : activity.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : ""
                         }`}
                       >
                         {activity.status}

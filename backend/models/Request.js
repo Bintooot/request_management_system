@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import moment from "moment-timezone";
+import { type } from "os";
 
 // Define the Request schema
 const requestSchema = new mongoose.Schema(
@@ -77,6 +78,18 @@ const requestSchema = new mongoose.Schema(
         },
         message: "Delivery date cannot be in the past.",
       },
+      default: null,
+    },
+    reviewedDate: {
+      type: Date,
+      default: null,
+    },
+    outForDeliveryDate: {
+      type: Date,
+      default: null,
+    },
+    completedDate: {
+      type: Date,
       default: null,
     },
     filename: {

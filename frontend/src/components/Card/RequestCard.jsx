@@ -83,15 +83,30 @@ const RequestCard = ({ items, open, handleClose }) => {
                 <p className="text-gray-500 text-sm">Status</p>
                 <span
                   className={`inline-flex px-3 py-1 text-sm rounded-full ${
-                    items.status === "Pending"
+                    items.status === "Approved"
+                      ? "bg-blue-100 text-blue-800"
+                      : items.status === "Pending"
                       ? "bg-yellow-100 text-yellow-800"
-                      : items.status === "Approved"
+                      : items.status === "Out for Delivery"
+                      ? "bg-orange-100 text-orange-800"
+                      : items.status === "Completed"
                       ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      : ""
                   }`}
                 >
                   {items.status}
                 </span>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Expected Delivery Date:</p>
+                <p className="font-medium text-gray-800">
+                  {items.deliveryDate
+                    ? format(
+                        new Date(items.deliveryDate),
+                        "MMMM dd, yyyy hh:mm a"
+                      )
+                    : "Not set"}
+                </p>
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Attached File</p>
@@ -165,11 +180,11 @@ const RequestCard = ({ items, open, handleClose }) => {
                 </p>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Expected Delivery Date:</p>
+                <p className="text-gray-500 text-sm">Reviewed Date:</p>
                 <p className="font-medium text-gray-800">
-                  {items.deliveryDate
+                  {items.reviewedDate
                     ? format(
-                        new Date(items.deliveryDate),
+                        new Date(items.reviewedDate),
                         "MMMM dd, yyyy hh:mm a"
                       )
                     : "Not set"}

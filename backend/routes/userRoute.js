@@ -105,7 +105,7 @@ router.get("/current-request", verifyToken, async (req, res) => {
 
     const latestRequest = await Request.findOne({
       requesterid: userId,
-      status: { $in: ["Pending", "Approved"] },
+      status: { $in: ["Pending", "Approved", "Out for Delivery"] },
     })
       .sort({ createdAt: -1 })
       .exec();
@@ -290,43 +290,26 @@ router.post(
     }
 
     try {
-      const currentDate = new Date();
-      const dayOfWeek = currentDate.getDay();
-      const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      currentDate.setDate(currentDate.getDate() - diffToMonday);
-      currentDate.setHours(0, 0, 0, 0);
-
       const existingRequest = await Request.findOne({
         requesterid: userId,
-        createdAt: { $gte: currentDate },
       }).sort({ createdAt: -1 });
 
       if (existingRequest) {
-        if (existingRequest.status === "Pending") {
-          return res.status(400).json({
-            message:
-              "You already have a pending request. Please wait for it to be processed.",
-          });
-        }
-
-        if (existingRequest.status === "Approved") {
-          return res.status(400).json({
-            message:
-              "You can only submit one request per week. Please wait a week.",
-          });
-        }
-
         if (
-          existingRequest.status === "Canceled" ||
-          existingRequest.status === "Rejected"
+          existingRequest.status === "Pending" ||
+          existingRequest.status === "Approved" ||
+          existingRequest.status === "Out for Delivery"
         ) {
-          console.log(
-            "Previous request was canceled or rejected, user can submit a new request."
-          );
+          return res.status(400).json({
+            message: `You cannot submit a new request because your current request is still in progress (${existingRequest.status}).`,
+          });
         }
+
+        console.log(
+          "Previous request was completed, canceled, or rejected. User can submit a new request."
+        );
       }
 
-      const file = req.file.path;
       const generatedRequestNo = `REQ-${Date.now()}`;
 
       const newRequest = new Request({
@@ -342,11 +325,10 @@ router.post(
         description,
         quantity,
         filename: req.file.originalname,
-        file,
+        file: req.file.path,
         status: "Pending",
       });
 
-      // Save the new request
       await newRequest.save();
       res.status(200).json({
         message: "Request submitted successfully",
@@ -354,9 +336,10 @@ router.post(
       });
     } catch (error) {
       console.error("Error submitting request:", error);
-      res
-        .status(500)
-        .json({ message: "Error submitting request", error: error.message });
+      res.status(500).json({
+        message: "Error submitting request",
+        error: error.message,
+      });
     }
   }
 );
