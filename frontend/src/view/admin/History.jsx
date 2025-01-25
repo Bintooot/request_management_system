@@ -1,116 +1,50 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Dropdown from "../../components/Dropdown";
 import CustomModal from "../../components/Modal/CustomModal";
+import { format } from "date-fns";
+import axios from "axios";
 
 const History = () => {
-  const approved_list = [
-    {
-      id: 1,
-      name: "Ben",
-      requestType: "Chicks",
-      date_submited: "12/11/23",
-      date_approved: "12/08/24",
-      status: "Approved",
-    },
+  const [approvedList, setApprovedList] = useState([]); // Initialize as an empty array
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(""); // Declare error state
 
-    {
-      id: 1,
-      name: "Ben",
-      requestType: "Chicks",
-      date_submited: "12/11/23",
-      date_approved: "12/08/24",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      name: "Alice",
-      requestType: "Ducklings",
-      date_submited: "12/10/23",
-      date_approved: "12/09/24",
-      status: "Approved",
-    },
-    {
-      id: 3,
-      name: "Charlie",
-      requestType: "Puppies",
-      date_submited: "12/09/23",
-      date_approved: "12/07/24",
-      status: "Approved",
-    },
-    {
-      id: 4,
-      name: "Diana",
-      requestType: "Kittens",
-      date_submited: "12/08/23",
-      date_approved: "12/06/24",
-      status: "Approved",
-    },
-    {
-      id: 5,
-      name: "Ethan",
-      requestType: "Goats",
-      date_submited: "12/07/23",
-      date_approved: "12/05/24",
-      status: "Approved",
-    },
-    {
-      id: 6,
-      name: "Fiona",
-      requestType: "Rabbits",
-      date_submited: "12/06/23",
-      date_approved: "12/04/24",
-      status: "Approved",
-    },
-    {
-      id: 7,
-      name: "George",
-      requestType: "Lambs",
-      date_submited: "12/05/23",
-      date_approved: "12/03/24",
-      status: "Approved",
-    },
-    {
-      id: 8,
-      name: "Hannah",
-      requestType: "Chicks",
-      date_submited: "12/04/23",
-      date_approved: "12/08/25",
-      status: "Pending",
-    },
-    {
-      id: 9,
-      name: "Ian",
-      requestType: "Turkeys",
-      date_submited: "12/03/23",
-      date_approved: "12/01/24",
-      status: "Approved",
-    },
-    {
-      id: 10,
-      name: "Julia",
-      requestType: "Cows",
-      date_submited: "12/02/23",
-      date_approved: "11/30/24",
-      status: "Approved",
-    },
-  ];
-
-  //Open Modal
+  // Open Modal
   const [openModal, setOpenModal] = useState(false);
-  const handleOpen = () => setOpenModal(true); // Open modal on button click
-  const handleClose = () => setOpenModal(false); // Close modal
+  const handleOpen = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
 
-  //View Specific Request
-  const [selectedRequest, setSelectedReqest] = useState(null);
+  // View Specific Request
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
+  const fetchAllData = async () => {
+    try {
+      const response = await axios.get("/api/admin/all-request-data", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      setApprovedList(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      setError("Failed to fetch all requests.");
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
 
   const handleSelectedRequest = (items) => {
-    setSelectedReqest(items);
+    setSelectedRequest(items);
   };
 
   return (
     <>
-      <div className=" p-5 border-2 shadow-lg h-full rounded-lg">
+      <div className="p-5 border-2 shadow-lg h-full rounded-lg">
         <header className="font-semibold">
           <h1 className="text-xl">HISTORY</h1>
           <p className="text-gray-500 font-normal">
@@ -144,24 +78,50 @@ const History = () => {
               <thead className="bg-white">
                 <tr>
                   <th>Request ID</th>
+                  <th>Type</th>
                   <th>User Name</th>
-                  <th>Type of Chicks</th>
+                  <th>Reviewd By</th>
                   <th>Requested Date </th>
                   <th>Approval Date</th>
                   <th>Status</th>
-                  <th>File Attached</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {approved_list.map((items) => {
-                  return (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-4">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan="8" className="text-center text-red-500 py-4">
+                      {error}
+                    </td>
+                  </tr>
+                ) : approvedList.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-4 text-red-500">
+                      No request history available.
+                    </td>
+                  </tr>
+                ) : (
+                  approvedList.map((items) => (
                     <tr key={items.id} className="hover:bg-slate-200">
-                      <td>{items.id}</td>
-                      <td>{items.name}</td>
-                      <td>{items.requestType}</td>
-                      <td>{items.date_submited}</td>
-                      <td>{items.date_approved}</td>
+                      <td>{items.generatedNo}</td>
+                      <td>{items.type}</td>
+                      <td>{items.requesterName}</td>
+                      <td>{items.reviewedby}</td>
+                      <td>
+                        {items.createdAt &&
+                        new Date(items.createdAt) !== "Invalid Date"
+                          ? format(
+                              new Date(items.createdAt),
+                              "MMMM dd, yyyy hh:mm a"
+                            )
+                          : "Invalid Date"}
+                      </td>
                       <td>
                         <span className="bg-green-500 p-1 text-white rounded-lg">
                           {items.status}
@@ -172,26 +132,25 @@ const History = () => {
                         <Button
                           name="Full Details"
                           onClick={() => {
-                            handleOpen(), handleSelectedRequest(items);
-                            s;
+                            handleOpen();
+                            handleSelectedRequest(items); // Set selected request correctly
                           }}
                           hoverbgcolor="hover:bg-orange-400"
                         />
                       </td>
                     </tr>
-                  );
-                })}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
-          <div>
-            {selectedRequest && (
-              <CustomModal
-                open={openModal}
-                handleClose={handleClose}
-              ></CustomModal>
-            )}
-          </div>
+          {selectedRequest && (
+            <CustomModal
+              open={openModal}
+              handleClose={handleClose}
+              request={selectedRequest}
+            />
+          )}
         </main>
       </div>
     </>

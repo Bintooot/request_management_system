@@ -36,37 +36,37 @@ const AdminLayout = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
+  const fetchAdminData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
 
-        if (!token) {
-          throw new Error("No token found. Please log in.");
-        }
-
-        const response = await axios.get(
-          "http://localhost:5000/api/admin/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.data) {
-          setAdminData(response.data);
-        } else {
-          throw new Error("No user data found.");
-        }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        setError(error.response?.data?.message || "Failed to fetch user data");
-      } finally {
-        setLoading(false);
+      if (!token) {
+        throw new Error("No token found. Please log in.");
       }
-    };
 
+      const response = await axios.get(
+        "http://localhost:5000/api/admin/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setAdminData(response.data);
+      } else {
+        throw new Error("No user data found.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      setError(error.response?.data?.message || "Failed to fetch user data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchAdminData();
     checkTokenExpiration();
   }, []);

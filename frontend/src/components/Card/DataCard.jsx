@@ -152,6 +152,13 @@ const DataCard = ({ data, onClick }) => {
                 {data.reviewedby || "Not yet reviewed"}
               </p>
             </div>
+
+            <div>
+              <p className="text-gray-500 text-sm">Admin Feedback</p>
+              <p className="font-medium text-gray-800">
+                {data.adminFeedback || "N/A"}
+              </p>
+            </div>
             <div>
               <p className="text-gray-500 text-sm">Reviewed Date:</p>
               <p className="font-medium text-gray-800">
@@ -159,9 +166,9 @@ const DataCard = ({ data, onClick }) => {
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Admin Feedback</p>
+              <p className="text-gray-500 text-sm">Out for Delivery Date:</p>
               <p className="font-medium text-gray-800">
-                {data.adminFeedback || "N/A"}
+                {ExpectedDate(data.outForDeliveryDate)}
               </p>
             </div>
           </div>

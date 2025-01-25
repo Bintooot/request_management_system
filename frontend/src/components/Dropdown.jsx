@@ -13,7 +13,7 @@ const Dropdown = ({ statusdata, onChange, value }) => {
         onChange={(e) => onChange(e.target.value)}
         value={value}
       >
-        <option value="" disabled>
+        <option selected disabled>
           Select Status
         </option>
         {statusdata.map((status, index) => (

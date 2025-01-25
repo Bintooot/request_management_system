@@ -190,6 +190,28 @@ const RequestCard = ({ items, open, handleClose }) => {
                     : "Not set"}
                 </p>
               </div>
+              <div>
+                <p className="text-gray-500 text-sm">Out for Delivery Date:</p>
+                <p className="font-medium text-gray-800">
+                  {items.outForDeliveryDate
+                    ? format(
+                        new Date(items.outForDeliveryDate),
+                        "MMMM dd, yyyy hh:mm a"
+                      )
+                    : "Not set"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Completed Date:</p>
+                <p className="font-medium text-gray-800">
+                  {items.completedDate
+                    ? format(
+                        new Date(items.completedDate),
+                        "MMMM dd, yyyy hh:mm a"
+                      )
+                    : "Not set"}
+                </p>
+              </div>
             </div>
           </div>
         </div>

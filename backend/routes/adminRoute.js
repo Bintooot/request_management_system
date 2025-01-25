@@ -130,6 +130,21 @@ router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+router.get("/all-request-data", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const response = await Request.find({
+      status: { $in: ["Rejected", "Completed"] },
+    }).sort({ createdAt: -1 });
+
+    console.log(response);
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.put("/update-request-status/:id", async (req, res) => {
   const { status, adminFeedback, reviewedby, deliveryDate } = req.body;
   const requestId = req.params.id;
@@ -216,8 +231,6 @@ router.put(
         });
       }
 
-      const currentDate = new Date().toISOString();
-
       const selectedRequest = await Request.findById(requestId);
 
       console.log(selectedRequest);
@@ -226,9 +239,16 @@ router.put(
         return res.status(404).json({ error: "Request not found." });
       }
 
-      selectedRequest.status = updateStatus;
-      selectedRequest.outForDeliveryDate = currentDate;
+      const currentDate = new Date();
+      if (updateStatus === "Out for Delivery") {
+        selectedRequest.status = updateStatus;
+        selectedRequest.outForDeliveryDate = currentDate;
+      } else if (updateStatus === "Completed") {
+        selectedRequest.status = updateStatus;
+        selectedRequest.completedDate = currentDate;
+      }
 
+      // Save the updated request
       await selectedRequest.save();
 
       res.status(200).json({
