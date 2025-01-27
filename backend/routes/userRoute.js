@@ -87,7 +87,7 @@ router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
     const inquiryresponse = await Inquiry.find({
       userId: userId,
       status: "Pending",
-    });
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({ inquiryresponse });
   } catch (error) {
@@ -403,14 +403,18 @@ router.post(
     try {
       const userId = req.user.userId;
 
-      const { requesterName, subject, message } = req.body;
+      const { requesterName, subject, message, filename } = req.body;
       const file = req.file ? req.file.path : null;
+
+      const generatedInquiryNo = `INQ-${Date.now()}`;
 
       const inquiry = new Inquiry({
         userId: userId,
+        inquiryId: generatedInquiryNo,
         name: requesterName,
         subject,
         message,
+        filename,
         file,
       });
 

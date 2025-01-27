@@ -1,4 +1,4 @@
-import express from "express";
+import express, { request } from "express";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import Admin from "../models/Admin.js";
 import User from "../models/User.js";
@@ -117,6 +117,20 @@ router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+// List all pending inquiry
+router.get("/list-pending-inquiry", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const pendingInquiries = await Inquiry.find({ status: "Pending" }).lean();
+
+    console.log(pendingInquiries);
+
+    res.status(200).json({ response: pendingInquiries });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
   try {
     const approvedlist = await Request.find({
@@ -130,14 +144,31 @@ router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-router.get("/all-request-data", verifyToken, isAdmin, async (req, res) => {
+router.get("/history-data", verifyToken, isAdmin, async (req, res) => {
   try {
-    const response = await Request.find({
+    const userRequestData = await Request.find({
       status: { $in: ["Rejected", "Completed"] },
     }).sort({ createdAt: -1 });
 
-    console.log(response);
+    const userInquiryData = await Inquiry.find({ status: "Pending" }).sort({
+      createdAt: -1,
+    });
 
+    const totalRequests = await Request.countDocuments({
+      status: { $in: ["Rejected", "Completed"] },
+    });
+    const totalInquiries = await Inquiry.countDocuments({ status: "Pending" });
+
+    const response = {
+      request: userRequestData,
+      inquiry: userInquiryData,
+      meta: {
+        totalRequests,
+        totalInquiries,
+      },
+    };
+
+    console.log(response);
     res.status(200).json(response);
   } catch (error) {
     console.error(error);

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Tab } from "@headlessui/react";
 import ListofRequest from "../../components/Card/ListofRequest";
+import ListofInquiries from "../../components/Card/ListofInquiry";
 import Button from "../../components/Button";
 import Notification from "../../components/Notification/Notification";
 import Dropdown from "../../components/Dropdown";
@@ -9,46 +11,48 @@ import { useOutletContext } from "react-router-dom";
 
 const RequestPending = () => {
   const { adminData } = useOutletContext() || { adminData: null };
-  const [updateStatus, setUpdateStatus] = useState("");
-  const [adminFeedback, setAdminFeedback] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [viewRequest, setViewRequest] = useState(null);
-  const [listPendingRequest, setListPendingRequest] = useState([]);
 
-  // For notifcation
+  // Shared state
+  const [isLoading, setIsLoading] = useState(true);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("success");
+
+  // Request state
+  const [listPendingRequest, setListPendingRequest] = useState([]);
+  const [viewRequest, setViewRequest] = useState(null);
+  const [deliveryDate, setDeliveryDate] = useState("");
+
+  // Inquiry state
+  const [listPendingInquiry, setListPendingInquiry] = useState([]);
+  const [viewInquiry, setViewInquiry] = useState(null);
+
+  // Common state
+  const [updateStatus, setUpdateStatus] = useState("");
+  const [adminFeedback, setAdminFeedback] = useState("");
 
   const showNotification = (message, type = "success") => {
     setStatusMessage(message);
     setStatusType(type);
     setNotificationVisible(true);
-
-    setTimeout(() => {
-      setNotificationVisible(false);
-    }, 5000);
+    setTimeout(() => setNotificationVisible(false), 5000);
   };
 
-  const statusHandler = (newStatus) => {
-    if (newStatus === updateStatus) {
-      setUpdateStatus("");
-      setTimeout(() => setUpdateStatus(newStatus), 0);
-
-      if (viewRequest) {
-        setViewRequest({ ...viewRequest, status: newStatus });
-      }
-    } else {
-      setUpdateStatus(newStatus);
-    }
-  };
-
-  const handlerViewRequest = (request) => {
+  const handleViewRequest = (request) => {
     setViewRequest(request);
+    setViewInquiry(null);
     setUpdateStatus(request.status);
+    setAdminFeedback("");
   };
 
-  const submitStatusUpdate = async () => {
+  const handleViewInquiry = (inquiry) => {
+    setViewInquiry(inquiry);
+    setViewRequest(null);
+    setUpdateStatus(inquiry.status);
+    setAdminFeedback("");
+  };
+
+  const handleRequestUpdate = async () => {
     if (!viewRequest) return;
 
     const currentDate = new Date();
@@ -58,8 +62,6 @@ const RequestPending = () => {
       showNotification("Delivery date cannot be in the past.", "error");
       return;
     }
-
-    const token = localStorage.getItem("authToken");
 
     try {
       const response = await axios.put(
@@ -73,253 +75,402 @@ const RequestPending = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       );
 
-      setAdminFeedback("");
-      setDeliveryDate(null);
-      setViewRequest(null);
       showNotification(response.data.message, "success");
-      setListPendingRequest((prevRequests) =>
-        prevRequests.filter((req) => req._id !== viewRequest._id)
+      setListPendingRequest((prev) =>
+        prev.filter((req) => req._id !== viewRequest._id)
       );
+      resetForm();
     } catch (error) {
-      console.error("Error updating status:", error);
-
-      const errorMessage =
-        error.response?.data?.error || "Failed to update request status.";
-      showNotification(errorMessage, "error");
+      showNotification(error.response?.data?.error || "Update failed", "error");
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const fetchListOfPendingRequest = async () => {
-      try {
-        const response = await axios.get(`/api/admin/list-pending-request`, {
+  const handleInquiryUpdate = async () => {
+    if (!viewInquiry) return;
+
+    try {
+      const response = await axios.put(
+        `/api/admin/update-inquiry-status/${viewInquiry._id}`,
+        {
+          status: updateStatus,
+          adminFeedback,
+          reviewedby: adminData.username,
+          resolvedDate: new Date(),
+        },
+        {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
-        });
-        setListPendingRequest(response.data.response);
+        }
+      );
+
+      showNotification(response.data.message, "success");
+      setListPendingInquiry((prev) =>
+        prev.filter((inq) => inq._id !== viewInquiry._id)
+      );
+      resetForm();
+    } catch (error) {
+      showNotification(error.response?.data?.error || "Update failed", "error");
+    }
+  };
+
+  const resetForm = () => {
+    setAdminFeedback("");
+    setDeliveryDate("");
+    setUpdateStatus("");
+    setViewRequest(null);
+    setViewInquiry(null);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("authToken");
+        const [requestResponse, inquiryResponse] = await Promise.all([
+          axios.get("/api/admin/list-pending-request", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("/api/admin/list-pending-inquiry", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setListPendingRequest(requestResponse.data.response);
+        setListPendingInquiry(inquiryResponse.data.response);
       } catch (error) {
-        console.error("Error fetching list of pending request data:", error);
+        showNotification("Failed to fetch data", "error");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchListOfPendingRequest();
+    fetchData();
   }, []);
 
   return (
-    <div className="md:flex p-4 gap-6">
-      {/* Pending Requests List */}
-      <div className="border-2 text-sm p-6 shadow-lg rounded-lg md:w-1/3 w-full">
-        <h1 className="font-bold text-lg mb-4">List of Pending Requests</h1>
-        <div className="my-3">
-          {listPendingRequest.length > 0 ? (
-            <ListofRequest
-              onClick={handlerViewRequest}
-              request={listPendingRequest}
-            />
-          ) : (
-            <p className="text-gray-500 text-center mt-4">
-              No pending requests found.
-            </p>
-          )}
-        </div>
-      </div>
+    <div className="p-4">
+      <Tab.Group>
+        <Tab.List className="flex space-x-1 rounded-xl bg-green-900/20 p-1 mb-4">
+          <Tab
+            className={({ selected }) =>
+              `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+            ${
+              selected
+                ? "bg-white text-green-700 shadow"
+                : "text-gray-600 hover:bg-white/[0.12] hover:text-green-600"
+            }`
+            }
+          >
+            Pending Requests
+          </Tab>
+          <Tab
+            className={({ selected }) =>
+              `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+            ${
+              selected
+                ? "bg-white text-green-700 shadow"
+                : "text-gray-600 hover:bg-white/[0.12] hover:text-green-600"
+            }`
+            }
+          >
+            Pending Inquiries
+          </Tab>
+        </Tab.List>
 
-      {notificationVisible && (
-        <Notification
-          message={statusMessage} // Pass the message to display
-          type={statusType} // Pass the type of notification (success or error)
-        />
-      )}
-
-      {/* Request Details */}
-      <div className="md:w-2/3 w-full md:pl-6 pl-0">
-        {viewRequest ? (
-          <div className="border-2 shadow-lg rounded-lg p-6">
-            <h1 className="font-semibold text-2xl text-center uppercase mb-4">
-              Request Details
-            </h1>
-            <hr className="my-2" />
-            {/* User Info Section */}
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">User Info</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium">Requester Name:</h3>
-                  <p className="text-sm">{viewRequest.requesterName}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Email:</h3>
-                  <p className="text-sm">{viewRequest.email}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Contact Number:</h3>
-                  <p className="text-sm">{viewRequest.contactnumber}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Position:</h3>
-                  <p className="text-sm">{viewRequest.position}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Request Details Section */}
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">Request Details</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium">Request ID:</h3>
-                  <p className="text-sm">{viewRequest.generatedRequestNo}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Type of Chicks:</h3>
-                  <p className="text-sm">{viewRequest.chicksType}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Number of Person:</h3>
-                  <p className="text-sm">{viewRequest.numberofrequester}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Quantity:</h3>
-                  <p className="text-sm">{viewRequest.quantity}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Date Requested:</h3>
-                  <p className="text-sm">
-                    {format(
-                      new Date(viewRequest.createdAt),
-                      "MMMM dd, yyyy hh:mm a"
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Status:</p>
-                  <small
-                    className={`rounded px-2 text-white ${
-                      updateStatus === "Approved"
-                        ? "bg-green-500"
-                        : updateStatus === "Rejected"
-                        ? "bg-red-500"
-                        : "bg-blue-400"
-                    }`}
-                  >
-                    {updateStatus || "Pending"}
-                  </small>
-                  {updateStatus !== viewRequest.status && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Status has been updated but not yet submitted.
+        <Tab.Panels>
+          {/* Requests Panel */}
+          <Tab.Panel>
+            <div className="md:flex gap-6">
+              <div className="md:w-1/3">
+                <div className="border-2 p-6 shadow-lg rounded-lg">
+                  <h2 className="font-bold text-lg mb-4">Pending Requests</h2>
+                  {isLoading ? (
+                    <p>Loading...</p>
+                  ) : listPendingRequest.length > 0 ? (
+                    <ListofRequest
+                      onClick={handleViewRequest}
+                      request={listPendingRequest}
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-center">
+                      No pending requests
                     </p>
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* Attached File Section */}
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">Attached File</h2>
-              <div>
-                {viewRequest.file ? (
-                  <>
-                    {viewRequest.filename.endsWith(".pdf") ? (
-                      <iframe
-                        src={`http://localhost:5000/${viewRequest.file}`}
-                        style={{
-                          width: "100%",
-                          height: "60vh",
-                          border: "1px solid #ccc",
-                        }}
-                        title="File Preview"
-                      />
-                    ) : viewRequest.filename.match(/\.(jpg|jpeg|png)$/) ? (
-                      <div className="flex justify-center">
-                        <img
-                          src={`http://localhost:5000/${viewRequest.file}`}
-                          alt="Uploaded"
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "60vh",
-                            objectFit: "contain",
-                          }}
+              <div className="md:w-2/3">
+                {viewRequest ? (
+                  <div className="border-2 p-6 shadow-lg rounded-lg">
+                    <h2 className="font-bold text-xl mb-4">Request Details</h2>
+                    {/* Request Details Form */}
+                    <div className="space-y-4">
+                      {/* Basic Info */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">
+                            Request ID:
+                          </label>
+                          <p>{viewRequest.generatedRequestNo}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Requester:
+                          </label>
+                          <p>{viewRequest.requesterName}</p>
+                        </div>
+                      </div>
+
+                      {/* Request Details */}
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">Email:</label>
+                          <p>{viewRequest.email}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Contact Number:
+                          </label>
+                          <p>{viewRequest.contactnumber}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Location:
+                          </label>
+                          <p>{viewRequest.location}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Type of Chicks:
+                          </label>
+                          <p>{viewRequest.chicksType}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Status:</label>
+                          <p>{viewRequest.status}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Quantity:
+                          </label>
+                          <p>{viewRequest.quantity}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Number of Reqeuster:
+                          </label>
+                          <p>{viewRequest.numberofrequester}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-1 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">
+                            Descripton:
+                          </label>
+                          <p>{viewRequest.description}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-sm">Attached File</p>
+                          <p className="font-medium text-gray-800">
+                            {viewRequest.filename}
+                          </p>
+                          <div>
+                            {viewRequest.file ? (
+                              <>
+                                {viewRequest.filename.endsWith(".pdf") ? (
+                                  <iframe
+                                    src={`http://localhost:5000/${viewRequest.file}`}
+                                    style={{
+                                      width: "100%",
+                                      height: "60vh",
+                                      border: "1px solid #ccc",
+                                    }}
+                                    title="File Preview"
+                                  />
+                                ) : viewRequest.filename.match(
+                                    /\.(jpg|jpeg|png)$/
+                                  ) ? (
+                                  <div className="flex justify-center">
+                                    <img
+                                      src={`http://localhost:5000/${viewRequest.file}`}
+                                      alt="Uploaded"
+                                      style={{
+                                        maxWidth: "100%",
+                                        maxHeight: "60vh",
+                                        objectFit: "contain",
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex justify-between items-center">
+                                    <p>File preview not supported.</p>
+                                    <a
+                                      href={`http://localhost:5000/${viewRequest.file}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="bg-gray-200 hover:bg-green-500 px-3 py-1 rounded-md"
+                                    >
+                                      Download File
+                                    </a>
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <p>No file attached</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Admin Actions */}
+                      <div>
+                        <label className="text-sm font-medium">
+                          Admin Feedback:
+                        </label>
+                        <textarea
+                          className="w-full border-2 rounded-lg p-2 h-32"
+                          value={adminFeedback}
+                          onChange={(e) => setAdminFeedback(e.target.value)}
                         />
                       </div>
-                    ) : (
+
                       <div className="flex justify-between items-center">
-                        <p>File preview not supported.</p>
-                        <a
-                          href={`http://localhost:5000/${viewRequest.file}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bg-gray-200 hover:bg-green-500 px-3 py-1 rounded-md"
-                        >
-                          Download File
-                        </a>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Delivery Date:
+                          </label>
+                          <input
+                            type="datetime-local"
+                            className="w-full border-2 rounded-lg p-2"
+                            value={deliveryDate}
+                            onChange={(e) => setDeliveryDate(e.target.value)}
+                          />
+                        </div>
+                        <Dropdown
+                          statusdata={["Approved", "Rejected"]}
+                          onChange={(value) => setUpdateStatus(value)}
+                        />
                       </div>
-                    )}
-                  </>
+
+                      <div className="text-right">
+                        <Button
+                          name="Update Request"
+                          onClick={handleRequestUpdate}
+                          hoverbgcolor="hover:bg-green-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <p>No file attached</p>
+                  <div className="flex justify-center items-center h-full">
+                    <p className="text-gray-500">
+                      Select a request to view details
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
+          </Tab.Panel>
 
-            {/* Admin Feedback Form Section */}
-            <div className="mb-6">
-              <h2 className="font-semibold text-lg mb-3">Admin Feedback</h2>
-              <textarea
-                className="w-full border-2 h-[20vh] resize-none p-2 text-sm"
-                value={adminFeedback}
-                required
-                onChange={(e) => setAdminFeedback(e.target.value)}
-              ></textarea>
-            </div>
-
-            <div className="mb-6 flex gap-2 items-center justify-between">
-              <div>
-                <label className="font-medium text-sm">
-                  Expected Delivery Date:
-                </label>
-                <input
-                  type="datetime-local"
-                  className="w-full border-2 p-2 text-sm"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  required
-                />
+          {/* Inquiries Panel */}
+          <Tab.Panel>
+            <div className="md:flex gap-6">
+              <div className="md:w-1/3">
+                <div className="border-2 p-6 shadow-lg rounded-lg">
+                  <h2 className="font-bold text-lg mb-4">Pending Inquiries</h2>
+                  {isLoading ? (
+                    <p>Loading...</p>
+                  ) : listPendingInquiry.length > 0 ? (
+                    <ListofInquiries
+                      onClick={handleViewInquiry}
+                      inquiries={listPendingInquiry}
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-center">
+                      No pending inquiries
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <Dropdown
-                  statusdata={["Approved", "Rejected"]}
-                  onChange={statusHandler}
-                />
+
+              <div className="md:w-2/3">
+                {viewInquiry ? (
+                  <div className="border-2 p-6 shadow-lg rounded-lg">
+                    <h2 className="font-bold text-xl mb-4">Inquiry Details</h2>
+                    <div className="space-y-4">
+                      {/* Inquiry Info */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">From:</label>
+                          <p>{viewInquiry.name}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Email:</label>
+                          <p>{viewInquiry.email}</p>
+                        </div>
+                      </div>
+
+                      {/* Inquiry Content */}
+                      <div>
+                        <label className="text-sm font-medium">Subject:</label>
+                        <p>{viewInquiry.subject}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Message:</label>
+                        <p className="whitespace-pre-wrap">
+                          {viewInquiry.message}
+                        </p>
+                      </div>
+
+                      {/* Admin Response */}
+                      <div>
+                        <label className="text-sm font-medium">
+                          Admin Response:
+                        </label>
+                        <textarea
+                          className="w-full border-2 rounded-lg p-2 h-32"
+                          value={adminFeedback}
+                          onChange={(e) => setAdminFeedback(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <Dropdown
+                          statusdata={["Resolved", "Pending"]}
+                          onChange={(value) => setUpdateStatus(value)}
+                        />
+                        <Button
+                          name="Submit Response"
+                          onClick={handleInquiryUpdate}
+                          hoverbgcolor="hover:bg-green-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-center items-center h-full">
+                    <p className="text-gray-500">
+                      Select an inquiry to view details
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
 
-            {updateStatus !== viewRequest.status && (
-              <p className="text-green-500 text-xs mt-2">
-                Status updated to "{updateStatus}", but not yet submitted.
-              </p>
-            )}
-
-            <div className="text-end">
-              <Button
-                name="Submit"
-                hoverbgcolor="hover:bg-green-500"
-                onClick={submitStatusUpdate}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500 text-lg">No request selected.</p>
-          </div>
-        )}
-      </div>
+      {notificationVisible && (
+        <Notification message={statusMessage} type={statusType} />
+      )}
     </div>
   );
 };

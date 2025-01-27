@@ -39,7 +39,7 @@ const FixedSidebar = ({ closeSidebar }) => {
           <NavLink to="/request-record" onClick={handleLinkClick}>
             <li className="p-3 hover:bg-green-500">Request Records</li>
           </NavLink>
-          <NavLink to="/inqure" onClick={handleLinkClick}>
+          <NavLink to="/inquire" onClick={handleLinkClick}>
             <li className="p-3 hover:bg-green-500">Inquiry & Reports</li>
           </NavLink>
         </ul>

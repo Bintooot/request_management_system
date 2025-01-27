@@ -9,14 +9,10 @@ const Inquire = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [userInquiry, setUserInquiry] = useState([]);
-  const [statusType, setStatusType] = useState("success"); // default is "success"
+  const [statusType, setStatusType] = useState("success"); // Default to success
   const [loading, setLoading] = useState(false);
 
-  // Requester Data info
-  const [requesterid, setRequesterid] = useState("");
-  const [requesterName, setRequesterName] = useState("");
-
-  // Inquiry Message
+  // Inquiry Form State
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState(null);
@@ -24,50 +20,39 @@ const Inquire = () => {
 
   useEffect(() => {
     if (user?.accountid && user?.username) {
-      setRequesterid(user.accountid);
-      setRequesterName(user.username);
+      // Ensure user info is set before fetching inquiries
     }
 
     const fetchUserInquiry = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No token found, please log in.");
+        console.error("No token found. Please log in.");
         return;
       }
 
       try {
-        setLoading(true); // Set loading to true when the fetch starts
+        setLoading(true); // Start loading
         const response = await axios.get(`/api/user/all-pending-inquiry`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // Check if the data structure matches your expectation
-        if (response.data?.inquiryresponse) {
-          setUserInquiry(response.data.inquiryresponse); // Update the state
-        } else {
-          console.warn("Unexpected response structure:", response.data);
-        }
+        const inquiries = response.data?.inquiryresponse || [];
+        setUserInquiry(inquiries); // Update state with inquiries
       } catch (error) {
-        // Enhanced error handling
-        if (error.response) {
-          console.error(
-            "Server error while fetching user requests:",
-            error.response.data
-          );
-        } else if (error.request) {
-          console.error("No response from server:", error.request);
-        } else {
-          console.error("Error setting up request:", error.message);
-        }
+        console.error(
+          "Error fetching inquiries:",
+          error.response?.data || error.message
+        );
+        showNotification("Failed to load inquiries.", "error");
       } finally {
-        setLoading(false); // Ensure loading is false once the request is done
+        setLoading(false); // Stop loading
       }
     };
 
     fetchUserInquiry();
-  }, [user]); // Runs when `user` changes
+  }, [user]);
 
   const deleteInquiry = async (requestId) => {
     try {
@@ -77,14 +62,13 @@ const Inquire = () => {
         },
       });
 
-      setUserInquiry((prevRequests) =>
-        prevRequests.filter((request) => request._id !== requestId)
+      setUserInquiry((prev) =>
+        prev.filter((request) => request._id !== requestId)
       );
-
       showNotification("Inquiry successfully removed!", "success");
     } catch (error) {
-      showNotification("Inquiry failed to be removed!", "failed");
       console.error("Error deleting inquiry:", error);
+      showNotification("Failed to remove inquiry.", "error");
     }
   };
 
@@ -95,12 +79,12 @@ const Inquire = () => {
   };
 
   const showNotification = (message, type = "success") => {
-    setStatusMessage(message); // Set the notification message
-    setStatusType(type); // Set the notification type ("success" or "error")
-    setNotificationVisible(true); // Make the notification visible
+    setStatusMessage(message);
+    setStatusType(type);
+    setNotificationVisible(true);
 
     setTimeout(() => {
-      setNotificationVisible(false); // Hide the notification after 5 seconds
+      setNotificationVisible(false);
     }, 5000);
   };
 
@@ -109,25 +93,28 @@ const Inquire = () => {
     setMessage("");
     setFile(null);
     setFileName("");
-    // Reset file input visually
-    document.getElementById("fileInput").value = ""; // Reset file input field
+    document.getElementById("fileInput").value = ""; // Reset file input visually
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!subject || !message) {
+      showNotification("Subject and message are required.", "error");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("requesterName", user.username);
+    formData.append("requesterName", user?.username || "");
     formData.append("subject", subject);
     formData.append("message", message);
-    if (file) formData.append("file", file); // Attach the file if selected
+    formData.append("filename", fileName);
+    if (file) formData.append("file", file);
 
     const token = localStorage.getItem("authToken");
 
-    console.log(token);
-    console.log(user.username);
-
     try {
+      setLoading(true);
       const response = await axios.post(
         "http://localhost:5000/api/user/submit-inquiry",
         formData,
@@ -138,14 +125,18 @@ const Inquire = () => {
           },
         }
       );
+
       setLoading(false);
       showNotification("Inquiry successfully submitted!", "success");
-      console.log("Inquiry created:", response.data);
+      setUserInquiry((prev) => [...prev, response.data]); // Add new inquiry
       resetForm();
     } catch (error) {
       setLoading(false);
-      showNotification("Fill in all the necessary fields.", "error"); // Show error notification
-      console.error("Error creating Inquiry:", error);
+      console.error(
+        "Error creating inquiry:",
+        error.response?.data || error.message
+      );
+      showNotification("Failed to submit inquiry. Try again.", "error");
     }
   };
 
@@ -153,24 +144,21 @@ const Inquire = () => {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-3xl font-semibold mb-6">Submit an Inquiry</h1>
       {notificationVisible && (
-        <Notification
-          message={statusMessage} // Pass the message to display
-          type={statusType} // Pass the type of notification (success or error)
-        />
+        <Notification message={statusMessage} type={statusType} />
       )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
-            className="block text-sm font-medium text-gray-700 mb-1"
             htmlFor="subject"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
             Subject
           </label>
           <input
             type="text"
-            name="subject"
-            value={subject}
             id="subject"
+            value={subject}
             onChange={(e) => setSubject(e.target.value)}
             required
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
@@ -179,28 +167,30 @@ const Inquire = () => {
 
         <div>
           <label
-            className="block text-sm font-medium text-gray-700 mb-1"
             htmlFor="message"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
             Message
           </label>
           <textarea
-            required
-            value={message}
             id="message"
+            value={message}
             onChange={(e) => setMessage(e.target.value)}
-            name="message"
+            required
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="fileInput"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Attachment (optional)
           </label>
           <input
             type="file"
-            id="fileInput" // Ensure ID is added here
+            id="fileInput"
             onChange={handleFileChange}
             className="w-full p-2 border rounded-md"
           />
@@ -210,44 +200,32 @@ const Inquire = () => {
           type="submit"
           className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
         >
-          Submit Inquiry
+          {loading ? "Submitting..." : "Submit Inquiry"}
         </button>
       </form>
 
       <div className="mt-8">
         <h1 className="text-3xl font-semibold mb-6">Previous Inquiries</h1>
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4 my-2">
-          <select className="w-full sm:w-48 p-2 border shadow-sm">
-            <option value="" disabled selected>
-              Filter Status
-            </option>
-            <option value="Approved">Viewed</option>
-            <option value="Pending">Pending</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Search by Name or ID"
-            className="w-full sm:w-64 p-2 border shadow-sm"
-          />
-        </div>
-
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {userInquiry.length === 0 ? (
-            <p>No inquiries available.</p>
-          ) : (
-            userInquiry.map((items) => (
-              <div className="border rounded-md p-4" key={items._id}>
+        {loading ? (
+          <p>Loading inquiries...</p>
+        ) : userInquiry.length === 0 ? (
+          <p>No inquiries available.</p>
+        ) : (
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {userInquiry.map((items) => (
+              <div
+                className="border rounded-md p-4"
+                key={items._id || items.subject}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium">
                       {items.subject || "No Subject"}
                     </h3>
-
                     <p className="text-sm text-gray-600 mt-1">
                       {items.message || "No inquiry message available."}
                     </p>
                   </div>
-
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       items.status === "Pending"
@@ -268,12 +246,11 @@ const Inquire = () => {
                     : "Unknown date"}
                 </div>
 
-                {/* Admin Reply Section */}
                 {items.adminReply ? (
                   <div className="mt-4">
                     <h4 className="font-medium text-gray-700">Admin Reply</h4>
                     <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
-                      {items.adminReply || "No reply yet."}
+                      {items.adminReply}
                     </div>
                   </div>
                 ) : (
@@ -292,9 +269,9 @@ const Inquire = () => {
                   </button>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

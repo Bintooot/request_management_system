@@ -117,7 +117,7 @@ function App() {
               }
             />
             <Route
-              path="/inqure"
+              path="/inquire"
               element={
                 <ProtectedRoute role="user">
                   <Inquire />

@@ -3,14 +3,15 @@ import mongoose from "mongoose";
 const inquirySchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    inquiryId: { type: String, required: true },
     name: { type: String, required: true },
     type: { type: String, default: "Inquiry" },
     subject: { type: String, required: true },
     message: { type: String, required: true },
     reply: { type: String },
     status: { type: String, default: "Pending" },
+    filename: { type: String },
     file: { type: String },
-    createdAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,

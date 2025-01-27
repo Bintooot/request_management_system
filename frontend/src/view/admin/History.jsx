@@ -4,31 +4,41 @@ import Dropdown from "../../components/Dropdown";
 import CustomModal from "../../components/Modal/CustomModal";
 import { format } from "date-fns";
 import axios from "axios";
+import { Tab } from "@headlessui/react";
 
 const History = () => {
-  const [approvedList, setApprovedList] = useState([]); // Initialize as an empty array
+  const [approvedList, setApprovedList] = useState({
+    request: [],
+    inquiry: [],
+  });
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(""); // Declare error state
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
-  // Open Modal
+  // Modal state
   const [openModal, setOpenModal] = useState(false);
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
-
-  // View Specific Request
   const [selectedRequest, setSelectedRequest] = useState(null);
 
+  // Fetch data function remains the same
   const fetchAllData = async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.get("/api/admin/all-request-data", {
+      const response = await axios.get("/api/admin/history-data", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-
-      setApprovedList(response.data);
+      const { request, inquiry } = response.data;
+      setApprovedList({ request, inquiry });
       setIsLoading(false);
     } catch (error) {
+      console.error(
+        "Error fetching data:",
+        error.response?.data || error.message
+      );
       setError("Failed to fetch all requests.");
       setIsLoading(false);
     }
@@ -38,122 +48,230 @@ const History = () => {
     fetchAllData();
   }, []);
 
-  const handleSelectedRequest = (items) => {
-    setSelectedRequest(items);
+  const handleSelectedRequest = (item) => {
+    setSelectedRequest(item);
+  };
+
+  const filterRecords = (records) => {
+    return records.filter((record) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        record.requesterName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        record.generatedNo?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        filterStatus === "" || record.status === filterStatus;
+      return matchesSearch && matchesStatus;
+    });
   };
 
   return (
-    <>
-      <div className="p-5 border-2 shadow-lg h-full rounded-lg">
-        <header className="font-semibold">
-          <h1 className="text-xl">HISTORY</h1>
-          <p className="text-gray-500 font-normal">
-            List of all request records
-          </p>
-        </header>
-        <div className="my-5">
-          <form action="" method="get" className="flex justify-between">
-            <Button name="PDF" hoverbgcolor="hover:bg-green-500" />
-            <div className="flex items-center gap-2">
-              <label htmlFor="Search" className="font-medium">
-                Search:
-              </label>
-              <input
-                type="text"
-                id="Search"
-                name="Search"
-                placeholder="Search by Name or ID"
-                className="border p-2 rounded shadow-lg"
-              />
-              <Dropdown
-                statusdata={["Completed", "Cancelled"]}
-                placeholder="Record Status"
-              />
-            </div>
-          </form>
-        </div>
-        <main>
-          <div className="overflow-y-scroll md:text-sm text-xs h-96">
-            <table className="w-full text-center bg-gray-100 border-collapse">
-              <thead className="bg-white">
-                <tr>
-                  <th>Request ID</th>
-                  <th>Type</th>
-                  <th>User Name</th>
-                  <th>Reviewd By</th>
-                  <th>Requested Date </th>
-                  <th>Approval Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
+    <div className="p-5 border-2 shadow-lg h-full rounded-lg">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">History Records</h1>
+        <p className="text-gray-600">
+          View all completed and cancelled records
+        </p>
+      </header>
+
+      {/* Search and Filter Section */}
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        <input
+          type="text"
+          placeholder="Search by Name or ID"
+          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Dropdown
+          statusdata={["Completed", "Cancelled"]}
+          placeholder="Filter Status"
+          onChange={(value) => setFilterStatus(value)}
+          className="w-full md:w-48"
+        />
+      </div>
+
+      {/* Tabs Section */}
+      <Tab.Group>
+        <Tab.List className="flex space-x-1 rounded-xl bg-green-900/20 p-1 mb-4">
+          <Tab
+            className={({ selected }) =>
+              `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+              ${
+                selected
+                  ? "bg-white text-green-700 shadow"
+                  : "text-gray-700 hover:bg-white/[0.12] hover:text-green-600"
+              }`
+            }
+          >
+            Requests
+          </Tab>
+          <Tab
+            className={({ selected }) =>
+              `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+              ${
+                selected
+                  ? "bg-white text-green-700 shadow"
+                  : "text-gray-700 hover:bg-white/[0.12] hover:text-green-600"
+              }`
+            }
+          >
+            Inquiries
+          </Tab>
+        </Tab.List>
+
+        <Tab.Panels>
+          {/* Requests Panel */}
+          <Tab.Panel>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg overflow-hidden">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td colSpan="8" className="text-center py-4">
-                      Loading...
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Request ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Reviewed By
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="8" className="text-center text-red-500 py-4">
-                      {error}
-                    </td>
-                  </tr>
-                ) : approvedList.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-4 text-red-500">
-                      No request history available.
-                    </td>
-                  </tr>
-                ) : (
-                  approvedList.map((items) => (
-                    <tr key={items.id} className="hover:bg-slate-200">
-                      <td>{items.generatedNo}</td>
-                      <td>{items.type}</td>
-                      <td>{items.requesterName}</td>
-                      <td>{items.reviewedby}</td>
-                      <td>
-                        {items.createdAt &&
-                        new Date(items.createdAt) !== "Invalid Date"
-                          ? format(
-                              new Date(items.createdAt),
-                              "MMMM dd, yyyy hh:mm a"
-                            )
-                          : "Invalid Date"}
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filterRecords(approvedList.request).map((item) => (
+                    <tr key={item._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.generatedRequestNo || "N/A"}
                       </td>
-                      <td>
-                        <span className="bg-green-500 p-1 text-white rounded-lg">
-                          {items.status}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.requesterName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.reviewedby}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {format(new Date(item.createdAt), "MMM dd, yyyy")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full font-medium
+                          ${
+                            item.status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {item.status}
                         </span>
                       </td>
-                      <td>1</td>
-                      <td className="flex justify-evenly py-2">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <Button
-                          name="Full Details"
+                          name="View Details"
                           onClick={() => {
                             handleOpen();
-                            handleSelectedRequest(items); // Set selected request correctly
+                            handleSelectedRequest(item);
                           }}
-                          hoverbgcolor="hover:bg-orange-400"
+                          className="text-sm"
                         />
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          {selectedRequest && (
-            <CustomModal
-              open={openModal}
-              handleClose={handleClose}
-              request={selectedRequest}
-            />
-          )}
-        </main>
-      </div>
-    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Tab.Panel>
+
+          {/* Inquiries Panel */}
+          <Tab.Panel>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg overflow-hidden">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Inquiry ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subject
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filterRecords(approvedList.inquiry).map((item) => (
+                    <tr key={item._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.inquiryId}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {format(new Date(item.createdAt), "MMM dd, yyyy")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full font-medium
+                          ${
+                            item.status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Button
+                          name="View Details"
+                          onClick={() => {
+                            handleOpen();
+                            handleSelectedRequest(item);
+                          }}
+                          className="text-sm"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+
+      {selectedRequest && (
+        <CustomModal
+          open={openModal}
+          handleClose={handleClose}
+          request={selectedRequest}
+        />
+      )}
+    </div>
   );
 };
 

@@ -97,21 +97,6 @@ const ApprovedRequest = () => {
         <h1 className="font-bold text-lg md:text-xl uppercase text-center md:text-left">
           Approved Requests
         </h1>
-        <form className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-          <input
-            type="text"
-            placeholder="Search by Name or ID"
-            className="border p-2 rounded text-sm w-full md:w-auto"
-          />
-          <Dropdown
-            statusdata={["On-Processed", "Completed", "Approved"]}
-            placeholder="Filter by Status"
-          />
-          <input
-            type="date"
-            className="border p-2 rounded text-sm w-full md:w-auto"
-          />
-        </form>
       </div>
 
       {notificationVisible && (
