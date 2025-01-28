@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import CardMenu from "../../components/Card/CardMenu";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import StatusTracking from "../../components/StatusTracking/StatusTracking";
+
 import {
   RiMailSendLine,
   RiTimeLine,
@@ -28,6 +30,8 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState([
     { name: "Loading", requests: 0 }, // Default value to show loading state
   ]);
+  const [latesRequest, setLatestRequest] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   if (!user) {
     return (
@@ -39,95 +43,118 @@ const Dashboard = () => {
     );
   }
 
+  const token = localStorage.getItem("authToken");
+
+  const fetchTotalPendingRequest = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get(
+        "/api/user/total-pending-request?status=Pending",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setRequestCount(response.data.count);
+    } catch (error) {
+      console.error("Error fetching user requests:", error);
+    }
+  };
+
+  const fetchTotalInquiry = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get("/api/user/total-inquiry", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setInquiryCount(response.data.response);
+    } catch (error) {
+      console.error("Error fetching user inquiry:", error);
+    }
+  };
+
+  const fetchTotalRequest = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get("/api/user/total-request", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTotalRequest(response.data.response);
+    } catch (error) {
+      console.error("Error fetching user inquiry:", error);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get("/api/user/recent-activity", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setRecentActivity(response.data.activities);
+    } catch (error) {
+      console.error("Error fetching user inquiry:", error);
+    }
+  };
+
+  const fetchLatestData = async () => {
+    try {
+      if (!token) {
+        console.error("No token found, please log in.");
+        return;
+      }
+
+      const response = await axios.get(`/api/user/current-request`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      setLatestRequest(response.data.data);
+    } catch (error) {
+      console.error("Error fetching user requests:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRequestData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get("/api/user/request-data", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Data received:", response.data);
+
+      const formattedData = response.data.map((item) => ({
+        name: item.date,
+        requests: item.count,
+      }));
+
+      setChartData(formattedData);
+    } catch (error) {
+      console.error("Error fetching request data:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchTotalPendingRequest = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const response = await axios.get(
-          "/api/user/total-pending-request?status=Pending",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setRequestCount(response.data.count);
-      } catch (error) {
-        console.error("Error fetching user requests:", error);
-      }
-    };
-
-    const fetchTotalInquiry = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const response = await axios.get("/api/user/total-inquiry", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setInquiryCount(response.data.response);
-      } catch (error) {
-        console.error("Error fetching user inquiry:", error);
-      }
-    };
-
-    const fetchTotalRequest = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const response = await axios.get("/api/user/total-request", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setTotalRequest(response.data.response);
-      } catch (error) {
-        console.error("Error fetching user inquiry:", error);
-      }
-    };
-
-    const fetchRecentActivity = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const response = await axios.get("/api/user/recent-activity", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setRecentActivity(response.data.activities);
-      } catch (error) {
-        console.error("Error fetching user inquiry:", error);
-      }
-    };
-
-    const fetchRequestData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const response = await axios.get("/api/user/request-data", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log("Data received:", response.data);
-
-        const formattedData = response.data.map((item) => ({
-          name: item.date,
-          requests: item.count,
-        }));
-
-        setChartData(formattedData);
-      } catch (error) {
-        console.error("Error fetching request data:", error);
-      }
-    };
-
+    fetchLatestData();
     fetchTotalRequest();
-
     fetchRequestData();
     fetchRecentActivity();
     fetchTotalInquiry();
@@ -251,6 +278,7 @@ const Dashboard = () => {
               </tbody>
             </table>
           </div>
+
           {recentActivity.length > visibleRows && (
             <div className="mt-4">
               <button
@@ -262,6 +290,9 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+      </div>
+      <div>
+        <StatusTracking data={latesRequest} />
       </div>
     </div>
   );

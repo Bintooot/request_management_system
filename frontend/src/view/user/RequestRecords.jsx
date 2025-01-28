@@ -56,7 +56,7 @@ const RequestRecords = () => {
         },
       });
       console.log(response.data);
-      setLatestRequest(response.data);
+      setLatestRequest(response.data.data);
     } catch (error) {
       console.error("Error fetching user requests:", error.message);
     } finally {
@@ -97,7 +97,9 @@ const RequestRecords = () => {
         }
       );
 
+      setLatestRequest(null);
       fetchLatestData();
+      fetchUserRequests();
       showNotification("Request successfully canceled!", "success");
     } catch (error) {
       showNotification("Request failed to cancel!", "failed");
@@ -113,10 +115,10 @@ const RequestRecords = () => {
         <Notification message={statusMessage} type={statusType} />
       )}
 
-      {latesRequest.length === 0 ? (
-        <p className="text-center">No data available.</p>
-      ) : (
+      {latesRequest && Object.keys(latesRequest).length > 0 ? (
         <DataCard data={latesRequest} onClick={cancelRequest} />
+      ) : (
+        <p className="text-center">No data available.</p>
       )}
 
       <div className="my-4">

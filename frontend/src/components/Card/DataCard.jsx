@@ -2,19 +2,13 @@ import React from "react";
 import { format } from "date-fns";
 
 const DataCard = ({ data, onClick }) => {
-  const formattedDate = format(
-    new Date(data.createdAt),
-    "MMMM dd, yyyy hh:mm a"
-  );
-
-  const ExpectedDate = (deliveryDate) => {
-    if (deliveryDate === null) {
-      return "N/A";
+  const safeFormatDate = (date) => {
+    if (!date) return "N/A";
+    try {
+      return format(new Date(date), "MMMM dd, yyyy hh:mm a");
+    } catch (error) {
+      return "Invalid Date";
     }
-
-    const formattedDate = format(deliveryDate, "MMMM dd, yyyy hh:mm a");
-
-    return formattedDate;
   };
 
   return (
@@ -83,7 +77,9 @@ const DataCard = ({ data, onClick }) => {
             </div>
             <div>
               <p className="text-gray-500 text-sm">Requested Date</p>
-              <p className="font-medium text-gray-800">{formattedDate}</p>
+              <p className="font-medium text-gray-800">
+                {safeFormatDate(data.createdAt)}
+              </p>
             </div>
             <div>
               <p className="text-gray-500 text-sm">Status</p>
@@ -106,41 +102,47 @@ const DataCard = ({ data, onClick }) => {
             <div>
               <p className="text-gray-500 text-sm">Expected Delivery Date</p>
               <p className="font-medium text-gray-800">
-                {ExpectedDate(data.deliveryDate)}
+                {safeFormatDate(data.deliveryDate)}
               </p>
             </div>
             <div className="col-span-3">
               <p className="text-gray-500 text-sm">Description</p>
               <p className="font-medium text-gray-800">{data.description}</p>
             </div>
+            {/* Fixed Attached File Section */}
             <div className="col-span-3">
               <p className="text-gray-500 text-sm">Attached File</p>
-              {data.file.endsWith(".pdf") ? (
-                <iframe
-                  src={`http://localhost:5000/${data.file}`}
-                  title="PDF Preview"
-                  className="w-full h-[100vh] border"
-                ></iframe>
-              ) : data.file.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                <img
-                  src={`http://localhost:5000/${data.file}`}
-                  alt={data.filename}
-                  className="w-full h-auto border"
-                />
+              {data.file ? (
+                data.file.endsWith(".pdf") ? (
+                  <iframe
+                    src={`http://localhost:5000/${data.file}`}
+                    title="PDF Preview"
+                    className="w-full h-[100vh] border"
+                  ></iframe>
+                ) : data.file.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                  <img
+                    src={`http://localhost:5000/${data.file}`}
+                    alt={data.filename || "Attached Image"}
+                    className="w-full h-auto border"
+                  />
+                ) : (
+                  <a
+                    href={`http://localhost:5000/${data.file}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {data.filename || "Download File"}
+                  </a>
+                )
               ) : (
-                <a
-                  href={`http://localhost:5000/${data.file}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  {data.filename}
-                </a>
+                <p className="text-gray-800">No file attached</p>
               )}
             </div>
           </div>
         </div>
 
+        {/* Admin Feedback Section */}
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
             Admin Feedback
@@ -152,7 +154,6 @@ const DataCard = ({ data, onClick }) => {
                 {data.reviewedby || "Not yet reviewed"}
               </p>
             </div>
-
             <div>
               <p className="text-gray-500 text-sm">Admin Feedback</p>
               <p className="font-medium text-gray-800">
@@ -162,13 +163,13 @@ const DataCard = ({ data, onClick }) => {
             <div>
               <p className="text-gray-500 text-sm">Reviewed Date:</p>
               <p className="font-medium text-gray-800">
-                {ExpectedDate(data.reviewedDate)}
+                {safeFormatDate(data.reviewedDate)}
               </p>
             </div>
             <div>
               <p className="text-gray-500 text-sm">Out for Delivery Date:</p>
               <p className="font-medium text-gray-800">
-                {ExpectedDate(data.outForDeliveryDate)}
+                {safeFormatDate(data.outForDeliveryDate)}
               </p>
             </div>
           </div>
