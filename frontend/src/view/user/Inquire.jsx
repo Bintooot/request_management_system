@@ -9,47 +9,46 @@ const Inquire = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [userInquiry, setUserInquiry] = useState([]);
-  const [statusType, setStatusType] = useState("success"); // Default to success
+  const [statusType, setStatusType] = useState("success");
   const [loading, setLoading] = useState(false);
 
-  // Inquiry Form State
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
 
+  const fetchUserInquiry = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.error("No token found. Please log in.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/user/all-pending-inquiry`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const inquiries = response.data?.inquiryresponse || [];
+      setUserInquiry(inquiries);
+    } catch (error) {
+      console.error(
+        "Error fetching inquiries:",
+        error.response?.data || error.message
+      );
+      showNotification("Failed to load inquiries.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.accountid && user?.username) {
       // Ensure user info is set before fetching inquiries
     }
-
-    const fetchUserInquiry = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No token found. Please log in.");
-        return;
-      }
-
-      try {
-        setLoading(true); // Start loading
-        const response = await axios.get(`/api/user/all-pending-inquiry`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const inquiries = response.data?.inquiryresponse || [];
-        setUserInquiry(inquiries); // Update state with inquiries
-      } catch (error) {
-        console.error(
-          "Error fetching inquiries:",
-          error.response?.data || error.message
-        );
-        showNotification("Failed to load inquiries.", "error");
-      } finally {
-        setLoading(false); // Stop loading
-      }
-    };
 
     fetchUserInquiry();
   }, [user]);
@@ -93,7 +92,7 @@ const Inquire = () => {
     setMessage("");
     setFile(null);
     setFileName("");
-    document.getElementById("fileInput").value = ""; // Reset file input visually
+    document.getElementById("fileInput").value = "";
   };
 
   const handleSubmit = async (e) => {
@@ -128,7 +127,8 @@ const Inquire = () => {
 
       setLoading(false);
       showNotification("Inquiry successfully submitted!", "success");
-      setUserInquiry((prev) => [...prev, response.data]); // Add new inquiry
+      setUserInquiry((prev) => [...prev, response.data]);
+      fetchUserInquiry();
       resetForm();
     } catch (error) {
       setLoading(false);
@@ -141,18 +141,17 @@ const Inquire = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-3xl font-semibold mb-6">Submit an Inquiry</h1>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+        Submit an Inquiry
+      </h1>
       {notificationVisible && (
         <Notification message={statusMessage} type={statusType} />
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="subject" className="block text-sm font-medium mb-1">
             Subject
           </label>
           <input
@@ -166,10 +165,7 @@ const Inquire = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="message" className="block text-sm font-medium mb-1">
             Message
           </label>
           <textarea
@@ -182,10 +178,7 @@ const Inquire = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="fileInput"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="fileInput" className="block text-sm font-medium mb-1">
             Attachment (optional)
           </label>
           <input
@@ -204,8 +197,10 @@ const Inquire = () => {
         </button>
       </form>
 
-      <div className="mt-8">
-        <h1 className="text-3xl font-semibold mb-6">Previous Inquiries</h1>
+      <div className="mt-6">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+          Previous Inquiries
+        </h1>
         {loading ? (
           <p>Loading inquiries...</p>
         ) : userInquiry.length === 0 ? (
@@ -214,20 +209,18 @@ const Inquire = () => {
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {userInquiry.map((items) => (
               <div
-                className="border rounded-md p-4"
+                className="border rounded-md p-4 bg-white shadow-md"
                 key={items._id || items.subject}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
                   <div>
-                    <h3 className="font-medium">
-                      {items.subject || "No Subject"}
-                    </h3>
+                    <h3 className="font-medium text-lg">{items.subject}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {items.message || "No inquiry message available."}
+                      {items.message}
                     </p>
                   </div>
                   <span
-                    className={`px-2 py-1 text-xs rounded-full ${
+                    className={`px-2 py-1 text-xs mt-2 sm:mt-0 rounded-full ${
                       items.status === "Pending"
                         ? "bg-yellow-100 text-yellow-800"
                         : items.status === "Approved"
@@ -235,39 +228,39 @@ const Inquire = () => {
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {items.status || "Unknown"}
+                    {items.status}
                   </span>
                 </div>
 
-                <div className="mt-2 text-sm text-gray-500">
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-gray-500 text-sm">Attached File</p>
+                  {items.file ? (
+                    <a
+                      href={`http://localhost:5000/${items.file}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-blue-500 underline"
+                    >
+                      View File
+                    </a>
+                  ) : (
+                    <p className="text-sm text-gray-500">No file attached</p>
+                  )}
+                </div>
+
+                <div className="mt-4 text-sm text-gray-500">
                   Submitted on:{" "}
                   {items.createdAt
                     ? format(new Date(items.createdAt), "MMMM dd, yyyy hh:mm a")
                     : "Unknown date"}
                 </div>
 
-                {items.adminReply ? (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-gray-700">Admin Reply</h4>
-                    <div className="border-l-4 pl-4 mt-2 text-sm text-gray-700">
-                      {items.adminReply}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 text-sm text-gray-600">
-                    No reply yet from the admin.
+                {items.adminFeedback && (
+                  <div className="mt-4 border-l-4 pl-4">
+                    <h4 className="font-medium">Admin Reply</h4>
+                    <p className="text-gray-600">{items.adminFeedback}</p>
                   </div>
                 )}
-
-                <div className="mt-2 text-sm text-end">
-                  <button
-                    type="button"
-                    onClick={() => deleteInquiry(items._id)}
-                    className="bg-red-600 text-sm text-white px-2 py-1 rounded-md hover:bg-red-700"
-                  >
-                    Remove
-                  </button>
-                </div>
               </div>
             ))}
           </div>

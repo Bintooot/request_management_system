@@ -22,6 +22,8 @@ const RequestRecords = () => {
   // View Specific Request
   const [selectedRequest, setSelectedReqest] = useState(null);
 
+  const token = localStorage.getItem("authToken");
+
   const handleSelectedRequest = (items) => {
     setSelectedReqest(items);
   };
@@ -37,53 +39,51 @@ const RequestRecords = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    fetchLatestData();
+    fetchUserRequests();
+  }, []);
 
-    const fetchUserRequests = async () => {
+  const fetchLatestData = async () => {
+    try {
       if (!token) {
         console.error("No token found, please log in.");
         return;
       }
 
-      try {
-        const response = await axios.get(`/api/user/all-request`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      const response = await axios.get(`/api/user/current-request`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      setLatestRequest(response.data);
+    } catch (error) {
+      console.error("Error fetching user requests:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setUserRequests(response.data.requestresponse || []);
-      } catch (error) {
-        console.error("Error fetching user requests:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUserRequests = async () => {
+    if (!token) {
+      console.error("No token found, please log in.");
+      return;
+    }
 
-    const fetchLatestData = async () => {
-      try {
-        if (!token) {
-          console.error("No token found, please log in.");
-          return;
-        }
+    try {
+      const response = await axios.get(`/api/user/all-request`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const response = await axios.get(`/api/user/current-request`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log(response.data);
-        setLatestRequest(response.data);
-      } catch (error) {
-        console.error("Error fetching user requests:", error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatestData();
-    fetchUserRequests();
-  }, []);
+      setUserRequests(response.data.requestresponse || []);
+    } catch (error) {
+      console.error("Error fetching user requests:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cancelRequest = async (requestId) => {
     try {
@@ -97,6 +97,7 @@ const RequestRecords = () => {
         }
       );
 
+      fetchLatestData();
       showNotification("Request successfully canceled!", "success");
     } catch (error) {
       showNotification("Request failed to cancel!", "failed");

@@ -85,7 +85,7 @@ const History = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Dropdown
-          statusdata={["Completed", "Cancelled"]}
+          statusdata={["Completed", "Rejected"]}
           placeholder="Filter Status"
           onChange={(value) => setFilterStatus(value)}
           className="w-full md:w-48"

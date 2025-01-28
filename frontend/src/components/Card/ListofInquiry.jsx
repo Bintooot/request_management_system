@@ -13,7 +13,13 @@ const ListofInquiries = ({ onClick, inquiries }) => {
           {/* Inquiry Information */}
           <div className="col-span-7 flex flex-col justify-center">
             <h1 className="text-lg font-semibold">{inquiry.name}</h1>
-            <p className="text-gray-500 text-sm">Date: {inquiry.createdAt}</p>
+            <p className="text-gray-500 text-sm">
+              Date:{" "}
+              {format(
+                new Date(inquiry.createdAt),
+                "MMMM dd, yyyy" + " , " + "hh:mm a"
+              )}
+            </p>
           </div>
 
           {/* Status Information */}

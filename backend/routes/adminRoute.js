@@ -120,7 +120,11 @@ router.get("/list-pending-request", verifyToken, isAdmin, async (req, res) => {
 // List all pending inquiry
 router.get("/list-pending-inquiry", verifyToken, isAdmin, async (req, res) => {
   try {
-    const pendingInquiries = await Inquiry.find({ status: "Pending" }).lean();
+    const pendingInquiries = await Inquiry.find({
+      status: { $in: ["Pending", "Viewed"] },
+    })
+      .lean()
+      .sort({ createdAt: -1 });
 
     console.log(pendingInquiries);
 
@@ -150,14 +154,18 @@ router.get("/history-data", verifyToken, isAdmin, async (req, res) => {
       status: { $in: ["Rejected", "Completed"] },
     }).sort({ createdAt: -1 });
 
-    const userInquiryData = await Inquiry.find({ status: "Pending" }).sort({
+    const userInquiryData = await Inquiry.find({
+      status: { $in: ["Viewed", "Resolved"] },
+    }).sort({
       createdAt: -1,
     });
 
     const totalRequests = await Request.countDocuments({
       status: { $in: ["Rejected", "Completed"] },
     });
-    const totalInquiries = await Inquiry.countDocuments({ status: "Pending" });
+    const totalInquiries = await Inquiry.countDocuments({
+      status: { $in: ["Viewed", "Resolved"] },
+    });
 
     const response = {
       request: userRequestData,
@@ -236,6 +244,59 @@ router.put("/update-request-status/:id", async (req, res) => {
     res.status(200).json({
       message: `Request status updated successfully to '${status}'!`,
       updatedRequest: request,
+    });
+  } catch (error) {
+    console.error("Error updating request:", error);
+    res
+      .status(500)
+      .json({ error: "Server error, failed to update request status." });
+  }
+});
+
+router.put("/update-inquiry-status/:id", async (req, res) => {
+  const { status, adminFeedback, reviewedby } = req.body;
+  const inquiryId = req.params.id;
+
+  if (!status) {
+    return res.status(400).json({
+      error: "Status is required.",
+    });
+  }
+
+  if (status === "Resolved" && !adminFeedback) {
+    return res.status(400).json({
+      error: "Admin feedback is required.",
+    });
+  }
+
+  // gi kuha ang current date.
+  const statusChangedAt = new Date().toISOString();
+
+  try {
+    const inquiry = await Inquiry.findById(inquiryId);
+
+    if (!inquiry) {
+      return res.status(404).json({ error: "Inquiry not found." });
+    }
+
+    inquiry.status = status;
+    inquiry.adminFeedback = adminFeedback;
+    inquiry.reviewedby = reviewedby;
+
+    // check kong ang status kay resolved or viewed then save the date.
+    if (status === "Resolved") {
+      inquiry.resolvedAt = statusChangedAt;
+    }
+
+    if (status === "Viewed") {
+      inquiry.viewedAt = statusChangedAt;
+    }
+
+    await inquiry.save();
+
+    res.status(200).json({
+      message: `Inquiry status updated successfully to '${status}'!`,
+      updatedRequest: inquiry,
     });
   } catch (error) {
     console.error("Error updating request:", error);

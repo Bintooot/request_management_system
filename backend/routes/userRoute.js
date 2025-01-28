@@ -86,7 +86,6 @@ router.get("/all-pending-inquiry", verifyToken, async (req, res) => {
 
     const inquiryresponse = await Inquiry.find({
       userId: userId,
-      status: "Pending",
     }).sort({ createdAt: -1 });
 
     res.status(200).json({ inquiryresponse });

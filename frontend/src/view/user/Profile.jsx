@@ -56,8 +56,8 @@ const Profile = () => {
 
       if (response.data.success) {
         alert("Profile updated successfully!");
-        // Re-fetch the updated user data after the update
-        fetchUser(); // Trigger a re-fetch of the user profile data
+
+        fetchUser();
       }
     } catch (error) {
       alert("Error updating profile!");

@@ -100,7 +100,6 @@ const RequestPending = () => {
           status: updateStatus,
           adminFeedback,
           reviewedby: adminData.username,
-          resolvedDate: new Date(),
         },
         {
           headers: {
@@ -113,6 +112,7 @@ const RequestPending = () => {
       setListPendingInquiry((prev) =>
         prev.filter((inq) => inq._id !== viewInquiry._id)
       );
+      fetchData();
       resetForm();
     } catch (error) {
       showNotification(error.response?.data?.error || "Update failed", "error");
@@ -127,29 +127,29 @@ const RequestPending = () => {
     setViewInquiry(null);
   };
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const [requestResponse, inquiryResponse] = await Promise.all([
+        axios.get("/api/admin/list-pending-request", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("/api/admin/list-pending-inquiry", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      setListPendingRequest(requestResponse.data.response);
+      setListPendingInquiry(inquiryResponse.data.response);
+    } catch (error) {
+      showNotification("Failed to fetch data", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem("authToken");
-        const [requestResponse, inquiryResponse] = await Promise.all([
-          axios.get("/api/admin/list-pending-request", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("/api/admin/list-pending-inquiry", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setListPendingRequest(requestResponse.data.response);
-        setListPendingInquiry(inquiryResponse.data.response);
-      } catch (error) {
-        showNotification("Failed to fetch data", "error");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -407,14 +407,25 @@ const RequestPending = () => {
                     <h2 className="font-bold text-xl mb-4">Inquiry Details</h2>
                     <div className="space-y-4">
                       {/* Inquiry Info */}
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid md:grid-cols-3 gap-4">
                         <div>
                           <label className="text-sm font-medium">From:</label>
                           <p>{viewInquiry.name}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Email:</label>
-                          <p>{viewInquiry.email}</p>
+                          <label className="text-sm font-medium">Status:</label>
+                          <p>{viewInquiry.status}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">
+                            Inquiry Created:
+                          </label>
+                          <p>
+                            {format(
+                              new Date(viewInquiry.createdAt),
+                              "MMMM dd, yyyy" + " , " + "hh:mm a"
+                            )}
+                          </p>
                         </div>
                       </div>
 
@@ -428,6 +439,57 @@ const RequestPending = () => {
                         <p className="whitespace-pre-wrap">
                           {viewInquiry.message}
                         </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-sm">Attached File</p>
+                        <p className="font-medium text-gray-800">
+                          {viewInquiry.filename}
+                        </p>
+                        <div>
+                          {viewInquiry.file ? (
+                            <>
+                              {viewInquiry.filename.endsWith(".pdf") ? (
+                                <iframe
+                                  src={`http://localhost:5000/${viewInquiry.file}`}
+                                  style={{
+                                    width: "100%",
+                                    height: "60vh",
+                                    border: "1px solid #ccc",
+                                  }}
+                                  title="File Preview"
+                                />
+                              ) : viewInquiry.filename.match(
+                                  /\.(jpg|jpeg|png)$/
+                                ) ? (
+                                <div className="flex justify-center">
+                                  <img
+                                    src={`http://localhost:5000/${viewInquiry.file}`}
+                                    alt="Uploaded"
+                                    style={{
+                                      maxWidth: "100%",
+                                      maxHeight: "60vh",
+                                      objectFit: "contain",
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex justify-between items-center">
+                                  <p>File preview not supported.</p>
+                                  <a
+                                    href={`http://localhost:5000/${viewInquiry.file}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="bg-gray-200 hover:bg-green-500 px-3 py-1 rounded-md"
+                                  >
+                                    Download File
+                                  </a>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p>No file attached</p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Admin Response */}
@@ -444,7 +506,7 @@ const RequestPending = () => {
 
                       <div className="flex justify-between items-center">
                         <Dropdown
-                          statusdata={["Resolved", "Pending"]}
+                          statusdata={["Viewed", "Resolved"]}
                           onChange={(value) => setUpdateStatus(value)}
                         />
                         <Button
