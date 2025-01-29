@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import Notification from "../../components/Notification/Notification";
 
 const Profile = () => {
   const { user, fetchUser } = useOutletContext() || {
@@ -8,12 +9,17 @@ const Profile = () => {
     setUser: null,
     fetchUser: null,
   };
-  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     email: user?.email || "",
     address: user?.address || "",
     contactnumber: user?.contactnumber || "",
   });
+
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success");
+  const [loading, setLoading] = useState(false);
 
   if (!user) {
     return (
@@ -25,6 +31,16 @@ const Profile = () => {
     );
   }
 
+  const showNotification = (message, type = "success") => {
+    setStatusMessage(message);
+    setStatusType(type);
+    setNotificationVisible(true);
+
+    setTimeout(() => {
+      setNotificationVisible(false);
+    }, 5000);
+  };
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -34,7 +50,8 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
+
     try {
       const token = localStorage.getItem("authToken");
 
@@ -43,27 +60,20 @@ const Profile = () => {
         return;
       }
 
-      const response = await axios.put(
-        `http://localhost:5000/api/user/update-profile/${user.accountid}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(`/api/user/update-profile/${user.accountid}`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (response.data.success) {
-        alert("Profile updated successfully!");
-
-        fetchUser();
-      }
+      showNotification("Profile updated successfully!", "success");
+      fetchUser();
     } catch (error) {
-      alert("Error updating profile!");
+      showNotification("Error updating profile!", "error");
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -97,6 +107,10 @@ const Profile = () => {
             </p>
           </div>
         </div>
+
+        {notificationVisible && (
+          <Notification message={statusMessage} type={statusType} />
+        )}
 
         {/* Settings Form */}
         <div className="bg-white p-8 shadow-lg border rounded-lg">
@@ -144,7 +158,7 @@ const Profile = () => {
               type="submit"
               className="mt-6 px-6 py-3 bg-green-900 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>

@@ -8,7 +8,6 @@ const Inquire = () => {
   const { user } = useOutletContext() || { user: null };
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
-  const [userInquiry, setUserInquiry] = useState([]);
   const [statusType, setStatusType] = useState("success");
   const [loading, setLoading] = useState(false);
 
@@ -16,6 +15,9 @@ const Inquire = () => {
   const [message, setMessage] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
+
+  const [inquiryStatus, setInquiryStatus] = useState("All");
+  const [userInquiry, setUserInquiry] = useState([]);
 
   const fetchUserInquiry = async () => {
     const token = localStorage.getItem("authToken");
@@ -45,31 +47,17 @@ const Inquire = () => {
     }
   };
 
+  const filterInquiries = (status) => {
+    if (status === "All") return userInquiry;
+    return userInquiry.filter((inquiry) => inquiry.status === status);
+  };
+
   useEffect(() => {
     if (user?.accountid && user?.username) {
-      // Ensure user info is set before fetching inquiries
     }
 
     fetchUserInquiry();
   }, [user]);
-
-  const deleteInquiry = async (requestId) => {
-    try {
-      await axios.delete(`/api/user/remove-inquiry/${requestId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-
-      setUserInquiry((prev) =>
-        prev.filter((request) => request._id !== requestId)
-      );
-      showNotification("Inquiry successfully removed!", "success");
-    } catch (error) {
-      console.error("Error deleting inquiry:", error);
-      showNotification("Failed to remove inquiry.", "error");
-    }
-  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -198,16 +186,29 @@ const Inquire = () => {
       </form>
 
       <div className="mt-6">
-        <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
-          Previous Inquiries
-        </h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+            Previous Inquiries
+          </h1>
+          <select
+            name="status"
+            id="status"
+            className="p-2 rounded-md border-2"
+            onChange={(e) => setInquiryStatus(e.target.value)}
+          >
+            <option value="All">All Inquiries</option>
+            <option value="Pending">Pending</option>
+            <option value="Viewed">Viewed</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
         {loading ? (
           <p>Loading inquiries...</p>
         ) : userInquiry.length === 0 ? (
           <p>No inquiries available.</p>
         ) : (
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {userInquiry.map((items) => (
+            {filterInquiries(inquiryStatus).map((items) => (
               <div
                 className="border rounded-md p-4 bg-white shadow-md"
                 key={items._id || items.subject}
@@ -223,8 +224,10 @@ const Inquire = () => {
                     className={`px-2 py-1 text-xs mt-2 sm:mt-0 rounded-full ${
                       items.status === "Pending"
                         ? "bg-yellow-100 text-yellow-800"
-                        : items.status === "Approved"
+                        : items.status === "Resolved"
                         ? "bg-green-100 text-green-800"
+                        : items.status === "Viewed"
+                        ? "bg-blue-100 text-blue-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >

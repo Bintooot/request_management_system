@@ -108,6 +108,48 @@ router.get("/current-request", verifyToken, async (req, res) => {
 
     const latestRequest = await Request.findOne({
       requesterid: userId,
+      status: { $in: ["Pending", "Approved", "Out for Delivery"] },
+    })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    console.log(latestRequest);
+
+    if (!latestRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "No pending requests found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Latest request fetched successfully.",
+      data: latestRequest,
+    });
+  } catch (error) {
+    console.error("Error fetching current requests:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the current request.",
+      error: error.message,
+    });
+  }
+});
+
+router.get("/current-tracking-request", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    const latestRequest = await Request.findOne({
+      requesterid: userId,
     })
       .sort({ createdAt: -1 })
       .exec();

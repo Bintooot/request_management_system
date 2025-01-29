@@ -59,7 +59,10 @@ const RequestPending = () => {
     const selectedDeliveryDate = new Date(deliveryDate);
 
     if (selectedDeliveryDate < currentDate) {
-      showNotification("Delivery date cannot be in the past.", "error");
+      showNotification(
+        "Delivery date cannot be on these day or past.",
+        "error"
+      );
       return;
     }
 

@@ -235,8 +235,12 @@ router.put("/update-request-status/:id", async (req, res) => {
     }
 
     // either approved or rejected ang request, e save ang date.
-    if (status === "Approved" || status === "Rejected") {
+    if (status === "Approved") {
       request.reviewedDate = statusChangedAt;
+    }
+
+    if (status === "Rejected") {
+      request.rejectedDate = statusChangedAt;
     }
 
     await request.save();

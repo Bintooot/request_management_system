@@ -3,7 +3,6 @@ import CardMenu from "../../components/Card/CardMenu";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
 import StatusTracking from "../../components/StatusTracking/StatusTracking";
-
 import {
   RiMailSendLine,
   RiTimeLine,
@@ -30,7 +29,7 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState([
     { name: "Loading", requests: 0 }, // Default value to show loading state
   ]);
-  const [latesRequest, setLatestRequest] = useState([]);
+  const [latestRequest, setLatestRequest] = useState([]);
   const [loading, setLoading] = useState(true);
 
   if (!user) {
@@ -47,8 +46,6 @@ const Dashboard = () => {
 
   const fetchTotalPendingRequest = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
       const response = await axios.get(
         "/api/user/total-pending-request?status=Pending",
         {
@@ -65,8 +62,6 @@ const Dashboard = () => {
 
   const fetchTotalInquiry = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
       const response = await axios.get("/api/user/total-inquiry", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -80,8 +75,6 @@ const Dashboard = () => {
 
   const fetchTotalRequest = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
       const response = await axios.get("/api/user/total-request", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -89,39 +82,30 @@ const Dashboard = () => {
       });
       setTotalRequest(response.data.response);
     } catch (error) {
-      console.error("Error fetching user inquiry:", error);
+      console.error("Error fetching total request:", error);
     }
   };
 
   const fetchRecentActivity = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
       const response = await axios.get("/api/user/recent-activity", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
       setRecentActivity(response.data.activities);
     } catch (error) {
-      console.error("Error fetching user inquiry:", error);
+      console.error("Error fetching user activity:", error);
     }
   };
 
   const fetchLatestData = async () => {
     try {
-      if (!token) {
-        console.error("No token found, please log in.");
-        return;
-      }
-
-      const response = await axios.get(`/api/user/current-request`, {
+      const response = await axios.get(`/api/user/current-tracking-request`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
       setLatestRequest(response.data.data);
     } catch (error) {
       console.error("Error fetching user requests:", error.message);
@@ -132,14 +116,11 @@ const Dashboard = () => {
 
   const fetchRequestData = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
       const response = await axios.get("/api/user/request-data", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Data received:", response.data);
 
       const formattedData = response.data.map((item) => ({
         name: item.date,
@@ -160,6 +141,12 @@ const Dashboard = () => {
     fetchTotalInquiry();
     fetchTotalPendingRequest();
   }, []);
+
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="w-16 h-16 border-4 border-blue-500 border-solid border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -200,7 +187,9 @@ const Dashboard = () => {
         {/* Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Request Timeline</h2>
-          {chartData && chartData.length > 0 ? (
+          {loading ? (
+            <LoadingSpinner />
+          ) : chartData && chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -211,7 +200,7 @@ const Dashboard = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-center  text-gray-500">
+            <div className="text-center text-gray-500">
               <h1>No data available for the request timeline.</h1>
             </div>
           )}
@@ -254,15 +243,17 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
-                          activity.status === "Approved"
+                          activity.status === "Approved" ||
+                          activity.status === "Viewed"
                             ? "bg-blue-100 text-blue-800"
                             : activity.status === "Pending"
                             ? "bg-yellow-100 text-yellow-800"
                             : activity.status === "Out for Delivery"
                             ? "bg-orange-100 text-orange-800"
-                            : activity.status === "Completed"
+                            : activity.status === "Completed" ||
+                              activity.status === "Resolved"
                             ? "bg-green-100 text-green-800"
-                            : ""
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {activity.status}
@@ -291,8 +282,9 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
       <div>
-        <StatusTracking data={latesRequest} />
+        <StatusTracking data={latestRequest} />
       </div>
     </div>
   );

@@ -92,6 +92,10 @@ const requestSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    rejectedDate: {
+      type: Date,
+      default: null,
+    },
     filename: {
       type: String,
       required: true,
