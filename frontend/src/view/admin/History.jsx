@@ -14,7 +14,7 @@ const History = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
   // Modal state
   const [openModal, setOpenModal] = useState(false);
@@ -59,9 +59,13 @@ const History = () => {
         record.requesterName
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        record.generatedNo?.toLowerCase().includes(searchTerm.toLowerCase());
+        record.generatedRequestNo
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        record.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.inquiryId?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
-        filterStatus === "" || record.status === filterStatus;
+        filterStatus === "All" || record.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
   };
@@ -84,12 +88,21 @@ const History = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Dropdown
-          statusdata={["Completed", "Rejected"]}
-          placeholder="Filter Status"
-          onChange={(value) => setFilterStatus(value)}
-          className="w-full md:w-48"
-        />
+        <select
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="border p-2 rounded-lg "
+        >
+          <optgroup label="Requests">
+            <option value="All">All Request</option>
+            <option value="Completed">Completed</option>
+            <option value="Rejected">Rejected</option>
+          </optgroup>
+          <optgroup label="Inquiries">
+            <option value="All">All Inquiries</option>
+            <option value="Viewed">Viewed</option>
+            <option value="Resolved">Resolved</option>
+          </optgroup>
+        </select>
       </div>
 
       {/* Tabs Section */}

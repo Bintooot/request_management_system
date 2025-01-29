@@ -241,7 +241,6 @@ router.get("/request-data", verifyToken, async (req, res) => {
 
     console.log("Request Data: ", requests);
 
-    // Send the formatted request data as the response
     res.json(formattedRequests);
   } catch (error) {
     console.error("Error fetching request data:", error);

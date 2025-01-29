@@ -70,6 +70,7 @@ const UserAccount = () => {
                 createdAt={viewUser.createdAt}
                 username={viewUser.username}
                 id={viewUser.accountid}
+                role={viewUser.role}
                 email={viewUser.email}
               />
             )}

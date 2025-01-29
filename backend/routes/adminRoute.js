@@ -32,6 +32,169 @@ router.get("/profile", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+router.get("/resolved-requests", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const totalResolvedRequests = await Request.countDocuments({
+      status: { $in: ["Completed", "Rejected"] },
+    });
+
+    if (!totalResolvedRequests) {
+      return res.status(404).json({ message: "No received requests found." });
+    }
+
+    console.log(totalResolvedRequests);
+    res.status(200).json({ response: totalResolvedRequests });
+  } catch (error) {
+    console.error("Error fetching total received requests:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching total received requests." });
+  }
+});
+
+router.get("/monthly-request-count", async (req, res) => {
+  try {
+    const { year } = req.query;
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+
+    const requestData = await Request.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+          status: { $in: ["Completed", "Rejected"] },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const formattedData = monthNames.map((months, index) => {
+      const monthData = requestData.find((item) => item._id === index + 1);
+      return {
+        months,
+        Request_Quantity: monthData ? monthData.count : 0,
+      };
+    });
+
+    console.log(formattedData);
+    res.json(formattedData);
+  } catch (error) {
+    console.error("Error fetching monthly request data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/monthly-chicks-data", verifyToken, isAdmin, async (req, res) => {
+  const { year } = req.query;
+
+  if (!year) {
+    return res.status(400).json({ message: "Year is required" });
+  }
+
+  try {
+    // MongoDB aggregation to get the total quantity of chicks requested per month for the given year and specific status
+    const chicksData = await Request.aggregate([
+      {
+        $match: {
+          status: { $in: ["Completed", "Rejected"] }, // Filter by Completed or Rejected status
+          createdAt: {
+            $gte: new Date(`${year}-01-01T00:00:00.000Z`), // Start of the year
+            $lt: new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`), // Start of the next year
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" }, // Group by month
+          totalQuantity: { $sum: "$quantity" }, // Sum up the quantity of chicks requested
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by month in ascending order
+      },
+      {
+        $project: {
+          month: "$_id",
+          total_quantity: "$totalQuantity",
+          _id: 0,
+        },
+      },
+    ]);
+
+    // Map month numbers to month names
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    // Format the data to return the month names and total quantity
+    const formattedChicksData = chicksData.map((item) => ({
+      month: months[item.month - 1],
+      total_quantity: item.total_quantity,
+    }));
+
+    console.log(formattedChicksData);
+    return res.json(formattedChicksData);
+  } catch (error) {
+    console.error("Error fetching chicks data:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/resolved-inquiries", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const totalResolvedInquiries = await Inquiry.countDocuments({
+      status: { $in: ["Viewed", "Resolved"] },
+    });
+
+    if (!totalResolvedInquiries) {
+      return res.status(404).json({ message: "No received requests found." });
+    }
+
+    console.log(totalResolvedInquiries);
+    res.status(200).json({ response: totalResolvedInquiries });
+  } catch (error) {
+    console.error("Error fetching total received requests:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching total received requests." });
+  }
+});
+
 // Get total count of users
 router.get("/total-user", verifyToken, isAdmin, async (req, res) => {
   try {

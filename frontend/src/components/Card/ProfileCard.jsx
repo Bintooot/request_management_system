@@ -2,7 +2,6 @@ import * as React from "react";
 
 const ProfileCard = ({
   namelabel,
-  _id,
   id,
   username,
   email,
@@ -34,6 +33,11 @@ const ProfileCard = ({
         </div>
 
         <div>
+          <span className="font-semibold">Role:</span>
+          <p className="text-gray-800 uppercase">{role}</p>
+        </div>
+
+        <div>
           <span className="font-semibold">Email:</span>
           <p className="text-gray-800 ">{email}</p>
         </div>
@@ -58,6 +62,16 @@ const ProfileCard = ({
           <p className="text-gray-800">
             {new Date(createdAt).toLocaleDateString()}
           </p>
+        </div>
+      </div>
+      <div className="flex gap-2 mt-4">
+        <div className="flex-1 p-2 border-2 bg-green-500 text-white rounded-md ">
+          <span>Total Request</span>
+          <p>100</p>
+        </div>
+        <div className="flex-1 p-2 border-2  bg-green-500 text-white rounded-md">
+          <span>Total Inquiry</span>
+          <p>100</p>
         </div>
       </div>
     </div>
