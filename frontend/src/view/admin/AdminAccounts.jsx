@@ -3,6 +3,8 @@ import Sidebar from "../../components/Navigation/Sidebar";
 import UserList from "../../components/TableList/UserList";
 import ProfileCard from "../../components/Card/ProfileCard";
 import axios from "axios";
+import AdminProfileCard from "../../components/Card/AdminProfileCard";
+import { format } from "date-fns";
 
 const AdminAccounts = () => {
   const [viewUser, setViewUser] = useState("");
@@ -64,12 +66,15 @@ const AdminAccounts = () => {
               Admin Profile
             </h2>
             {viewUser && (
-              <ProfileCard
+              <AdminProfileCard
                 namelabel="Admin ID:"
                 address={viewUser.address}
                 contactnumber={viewUser.contactnumber}
                 position={viewUser.position}
-                createdAt={viewUser.createdAt}
+                createdAt={format(
+                  new Date(viewUser.createdAt),
+                  "MMMM dd, yyyy"
+                )}
                 username={viewUser.username}
                 id={viewUser.accountid}
                 email={viewUser.email}

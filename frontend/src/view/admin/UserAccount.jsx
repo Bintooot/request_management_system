@@ -8,33 +8,86 @@ const UserAccount = () => {
   const [userList, setUserList] = useState([]);
   const [viewUser, setViewUser] = useState("");
 
+  const [totalUsersRequest, setTotalUsersRequest] = useState(0);
+  const [totalUsersInquiry, setTotalUsersInquiry] = useState(0);
+
   const viewUserHandler = (user) => {
     setViewUser(user);
-    console.log(user);
+    console.log(user._id);
+
+    fetchTotalUsersRequest(user._id);
+    fetchTotalUsersInquiry(user._id);
   };
 
-  useEffect(() => {
-    const fetchListOfUser = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
 
-        if (!token) {
-          console.error("No token found");
-          return;
-        }
+  const fetchListOfUser = async () => {
+    try {
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
 
-        const response = await axios.get("/api/admin/list-of-user", {
+      const response = await axios.get("/api/admin/list-of-user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUserList(response.data.users);
+    } catch (error) {
+      console.error("Error fetching list of users:", error);
+    }
+  };
+
+  const fetchTotalUsersRequest = async (_id) => {
+    try {
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      console.log(_id);
+
+      const response = await axios.get(
+        `/api/admin/total-users-request/${_id}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
+        }
+      );
+      console.log("Total Request", response.data.totalUsers);
+      setTotalUsersRequest(response.data.totalUsers);
+    } catch (error) {
+      console.error("Error fetching total users request:", error);
+    }
+  };
 
-        setUserList(response.data.users);
-      } catch (error) {
-        console.error("Error fetching list of users:", error);
+  const fetchTotalUsersInquiry = async (_id) => {
+    try {
+      if (!token) {
+        console.error("No token found");
+        return;
       }
-    };
 
+      console.log(_id);
+
+      const response = await axios.get(
+        `/api/admin/total-users-inquiry/${_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Total Inquiry", response.data.totalInquiry);
+      setTotalUsersInquiry(response.data.totalInquiry);
+    } catch (error) {
+      console.error("Error fetching total users request:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchListOfUser();
   }, []);
 
@@ -63,6 +116,9 @@ const UserAccount = () => {
             </h2>
             {viewUser && (
               <ProfileCard
+                totalUsersRequest={totalUsersRequest}
+                totalUsersInquiry={totalUsersInquiry}
+                userid={viewUser._id}
                 namelabel="Admin ID:"
                 address={viewUser.address}
                 contactnumber={viewUser.contactnumber}

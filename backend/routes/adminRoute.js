@@ -1,4 +1,5 @@
 import express, { request } from "express";
+import bcrypt from "bcryptjs";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import Admin from "../models/Admin.js";
 import User from "../models/User.js";
@@ -25,12 +26,97 @@ router.get("/profile", verifyToken, isAdmin, async (req, res) => {
       position: admin.position,
       address: admin.address,
       role: admin.role,
+      createdAt: admin.createdAt,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.put("/update-profile", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const adminId = req.user.userId;
+    const { email, contactNumber, address, password } = req.body;
+
+    console.log(req.body);
+    console.log(password);
+
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    // Update fields
+    admin.set({ email, contactnumber: contactNumber, address });
+
+    let passwordChanged = false;
+
+    if (password) {
+      admin.password = password;
+      passwordChanged = true;
+    }
+
+    await admin.save();
+
+    res.json({
+      accountid: admin.accountid,
+      username: admin.username,
+      email: admin.email,
+      contactnumber: admin.contactnumber,
+      position: admin.position,
+      address: admin.address,
+      role: admin.role,
+      createdAt: admin.createdAt,
+      logout: passwordChanged, // Inform frontend if logout is needed
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get(
+  "/total-users-request/:id",
+  verifyToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const userId = req.params.id;
+
+      console.log("User ID: ", userId);
+
+      const totalUsers = await Request.countDocuments({ requesterid: userId });
+
+      console.log("Total Requests:", totalUsers);
+
+      res.status(200).json({ totalUsers });
+    } catch (error) {
+      console.error("Error fetching total users request:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+router.get(
+  "/total-users-inquiry/:id",
+  verifyToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const userId = req.params.id;
+
+      console.log("User ID: ", userId);
+
+      const totalInquiry = await Inquiry.countDocuments({ userId: userId });
+
+      console.log("Total Inquiry:", totalInquiry);
+
+      res.status(200).json({ totalInquiry });
+    } catch (error) {
+      console.error("Error fetching total users inquiry:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 
 router.get("/resolved-requests", verifyToken, isAdmin, async (req, res) => {
   try {

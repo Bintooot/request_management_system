@@ -39,15 +39,11 @@ const SignIn = () => {
     try {
       const loginAccount = { email, password };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        loginAccount
-      );
+      const response = await axios.post("/api/auth/login", loginAccount);
 
-      const { token, expirationTime } = response.data;
+      const { token } = response.data;
 
       localStorage.setItem("authToken", token);
-      localStorage.setItem("tokenExpirationTime", expirationTime);
 
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
 

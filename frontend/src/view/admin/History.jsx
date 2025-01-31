@@ -250,8 +250,10 @@ const History = () => {
                         <span
                           className={`px-2 py-1 text-xs rounded-full font-medium
                           ${
-                            item.status === "Completed"
+                            item.status === "Resolved"
                               ? "bg-green-100 text-green-800"
+                              : item.status === "Viewed"
+                              ? "bg-blue-100 text-blue-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >

@@ -21,21 +21,6 @@ const AdminLayout = () => {
     setOpen(false);
   };
 
-  const checkTokenExpiration = () => {
-    const token = localStorage.getItem("authToken");
-    const expirationTime = localStorage.getItem("tokenExpirationTime");
-
-    if (token && expirationTime) {
-      const currentTime = Date.now();
-
-      if (currentTime > expirationTime) {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("tokenExpirationTime");
-        navigate("/login");
-      }
-    }
-  };
-
   const fetchAdminData = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -68,11 +53,11 @@ const AdminLayout = () => {
 
   useEffect(() => {
     fetchAdminData();
-    checkTokenExpiration();
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("tokenExpirationTime");
     window.location.reload();
   };
 
@@ -94,9 +79,9 @@ const AdminLayout = () => {
                   ) : error ? (
                     <span className="text-red-500">Error: {error}</span>
                   ) : (
-                    <>
+                    <div className="text-center text-lg sm:text-xl md:text-2xl lg:text-3xl">
                       Welcome! <span>{adminData?.username || "Admin"}</span>
-                    </>
+                    </div>
                   )}
                 </h1>
               </div>

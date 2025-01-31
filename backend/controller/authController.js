@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Admin from "../models/Admin.js";
 import jwt from "jsonwebtoken";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 // Register handler (for both user and admin)
 export const register = async (req, res) => {
@@ -36,9 +37,9 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await Admin.findOne({ email });
-
     console.log(req.body);
+
+    let user = await Admin.findOne({ email });
 
     if (!user) {
       user = await User.findOne({ email });
@@ -55,11 +56,8 @@ export const login = async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1h" }
+      process.env.JWT_SECRET_KEY
     );
-
-    console.log(token);
 
     res.status(200).json({ token, role: user.role });
   } catch (err) {

@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import * as React from "react";
 
 const AdminProfileCard = ({
@@ -10,7 +11,7 @@ const AdminProfileCard = ({
   createdAt,
 }) => {
   return (
-    <div className="w-full max-w-full sm:max-w-lg mx-auto bg-gray-100 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-300">
+    <div className="bg-gray-100 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-300">
       <div className="text-center mb-6">
         <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
           Admin Profile
@@ -70,15 +71,9 @@ const AdminProfileCard = ({
             Account Created:
           </span>
           <p className="text-base sm:text-lg font-semibold text-gray-800">
-            {new Date(createdAt).toLocaleDateString()}
+            {createdAt || "No creation date available"}
           </p>
         </div>
-      </div>
-
-      <div className="mt-6 text-center">
-        <button className="bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
-          Edit Profile
-        </button>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import * as React from "react";
 
 const ProfileCard = ({
+  totalUsersRequest,
+  totalUsersInquiry,
   namelabel,
   id,
   username,
@@ -67,11 +69,11 @@ const ProfileCard = ({
       <div className="flex gap-2 mt-4">
         <div className="flex-1 p-2 border-2 bg-green-500 text-white rounded-md ">
           <span>Total Request</span>
-          <p>100</p>
+          <p>{totalUsersRequest}</p>
         </div>
         <div className="flex-1 p-2 border-2  bg-green-500 text-white rounded-md">
           <span>Total Inquiry</span>
-          <p>100</p>
+          <p>{totalUsersInquiry}</p>
         </div>
       </div>
     </div>

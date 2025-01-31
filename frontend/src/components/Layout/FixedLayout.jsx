@@ -43,25 +43,8 @@ const FixedLayout = () => {
     }
   };
 
-  const checkTokenExpiration = () => {
-    const token = localStorage.getItem("authToken");
-    const expirationTime = localStorage.getItem("tokenExpirationTime");
-
-    if (token && expirationTime) {
-      const currentTime = Date.now();
-
-      if (currentTime > expirationTime) {
-        // Token has expired, so logout the user
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("tokenExpirationTime");
-        navigate("/login"); // Redirect to login page
-      }
-    }
-  };
-
   useEffect(() => {
     fetchUser();
-    checkTokenExpiration();
   }, [navigate]);
 
   if (isLoading) {

@@ -113,14 +113,30 @@ const ApprovedRequest = () => {
           <table className="w-full text-center bg-gray-100 border-collapse">
             <thead className="bg-white sticky top-0">
               <tr>
-                <th className="p-2 text-xs md:text-sm">Request ID</th>
-                <th className="p-2 text-xs md:text-sm">User Name</th>
-                <th className="p-2 text-xs md:text-sm">Reviewed By</th>
-                <th className="p-2 text-xs md:text-sm">Type of Chicks</th>
-                <th className="p-2 text-xs md:text-sm">Requested Date</th>
-                <th className="p-2 text-xs md:text-sm">Approval Date</th>
-                <th className="p-2 text-xs md:text-sm">Status</th>
-                <th className="p-2 text-xs md:text-sm">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Request ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reviewed By
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type of Chicks
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Requested Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Approval Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -133,19 +149,19 @@ const ApprovedRequest = () => {
               ) : (
                 approvedList.map((item) => (
                   <tr key={item._id} className="hover:bg-slate-200">
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.generatedRequestNo}
                     </td>
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.requesterName}
                     </td>
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.reviewedby}
                     </td>
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.chicksType}
                     </td>
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.createdAt &&
                       new Date(item.createdAt) !== "Invalid Date"
                         ? format(
@@ -154,7 +170,7 @@ const ApprovedRequest = () => {
                           )
                         : "Invalid Date"}
                     </td>
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {item.updatedAt &&
                       new Date(item.updatedAt) !== "Invalid Date"
                         ? format(
@@ -164,7 +180,7 @@ const ApprovedRequest = () => {
                         : "Invalid Date"}
                     </td>
 
-                    <td className="p-2 text-xs md:text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
                         className={`p-1 rounded-lg text-xs md:text-sm ${
                           item.status === "Approved"
