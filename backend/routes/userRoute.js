@@ -4,7 +4,10 @@ import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
 import Inquiry from "../models/Inquiry.js";
+import ContactUs from "../models/ContactUs.js";
 import mongoose from "mongoose";
+
+import { io } from "../server.js";
 
 const router = express.Router();
 
@@ -55,7 +58,6 @@ router.get("/total-inquiry", verifyToken, async (req, res) => {
 
     const response = await Inquiry.countDocuments({
       userId: userId,
-      status: "Pending",
     });
 
     res.status(200).json({ response });
@@ -386,6 +388,7 @@ router.post(
       });
 
       await newRequest.save();
+      io.emit("newRequest", { message: "A new request has been created!" });
       res.status(200).json({
         message: "Request submitted successfully",
         data: newRequest,
@@ -475,6 +478,7 @@ router.post(
       });
 
       await inquiry.save();
+      io.emit("newRequest", { message: "A new inquiry has been created!" });
       res
         .status(200)
         .json({ message: "Inquiry submitted successfully", data: inquiry });
@@ -560,6 +564,42 @@ router.delete("/remove-inquiry/:id", verifyToken, isUser, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/contactUs", async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    if (!name) {
+      res.status(404).json({ messag: "Name field is missing." });
+    }
+
+    if (!email) {
+      res.status(404).json({ messag: "Email field is missing." });
+    }
+
+    if (!subject) {
+      res.status(404).json({ messag: "Subject field is missing." });
+    }
+
+    if (!message) {
+      res.status(404).json({ messag: "Message field is missing." });
+    }
+
+    const newContactUs = new ContactUs({
+      name,
+      email,
+      subject,
+      message,
+    });
+
+    await newContactUs.save();
+
+    res.status(200).json({ message: "Message successfully sent." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 

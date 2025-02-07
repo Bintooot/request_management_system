@@ -24,14 +24,11 @@ const FixedLayout = () => {
         throw new Error("No auth token found");
       }
 
-      const response = await axios.get(
-        "http://localhost:5000/api/user/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get("/api/user/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setUser(response.data);
     } catch (error) {

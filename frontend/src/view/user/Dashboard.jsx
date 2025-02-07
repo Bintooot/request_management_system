@@ -21,7 +21,6 @@ import { format } from "date-fns";
 
 const Dashboard = () => {
   const { user } = useOutletContext() || { user: null };
-  const [requestCount, setRequestCount] = useState(0);
   const [totalRequest, setTotalRequest] = useState(0);
   const [inquiryCount, setInquiryCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -43,22 +42,6 @@ const Dashboard = () => {
   }
 
   const token = localStorage.getItem("authToken");
-
-  const fetchTotalPendingRequest = async () => {
-    try {
-      const response = await axios.get(
-        "/api/user/total-pending-request?status=Pending",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setRequestCount(response.data.count);
-    } catch (error) {
-      console.error("Error fetching user requests:", error);
-    }
-  };
 
   const fetchTotalInquiry = async () => {
     try {
@@ -139,7 +122,6 @@ const Dashboard = () => {
     fetchRequestData();
     fetchRecentActivity();
     fetchTotalInquiry();
-    fetchTotalPendingRequest();
   }, []);
 
   const LoadingSpinner = () => (
@@ -161,13 +143,10 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 m-6">
-        <CardMenu
-          title="Pending Requests"
-          number={requestCount}
-          icon={<RiTimeLine className="text-white" />}
-          className="bg-orange-50"
-        />
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-6 m-6">
+        <div className="col-span-2">
+          <StatusTracking data={latestRequest} />
+        </div>
         <CardMenu
           title="Total Inquiry"
           number={inquiryCount}
@@ -281,10 +260,6 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-      </div>
-
-      <div>
-        <StatusTracking data={latestRequest} />
       </div>
     </div>
   );

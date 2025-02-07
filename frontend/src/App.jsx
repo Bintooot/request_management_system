@@ -21,6 +21,7 @@ import PageNotFound from "./view/landingpage/PageNotFound";
 import AboutUs from "./view/landingpage/AboutUs";
 import ContactUs from "./view/landingpage/ContactUs";
 import LandingPageLayout from "./components/Layout/LandingPageLayout";
+import ForgotPassword from "./view/auth/ForgotPassword/ForgotPassword";
 
 import ProtectedRoute from "./components/ProtectedPage/ProtectedRoute"; // Import ProtectedRoute
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
 
           {/* Admin Routes (Protected) */}

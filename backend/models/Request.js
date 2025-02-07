@@ -71,13 +71,6 @@ const requestSchema = new mongoose.Schema(
     },
     deliveryDate: {
       type: Date,
-      required: false,
-      validate: {
-        validator: function (value) {
-          return !value || value >= Date.now();
-        },
-        message: "Delivery date cannot be in the past.",
-      },
       default: null,
     },
     reviewedDate: {

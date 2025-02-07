@@ -12,10 +12,10 @@ import {
 
 const RequestChart = ({ data }) => {
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height={400}>
       <BarChart data={data}>
         <CartesianGrid />
-        <XAxis dataKey="months" />
+        <XAxis dataKey="month" />
         <YAxis />
         <Tooltip />
         <Legend />

@@ -5,6 +5,7 @@ import Admin from "../models/Admin.js";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
 import Inquiry from "../models/Inquiry.js";
+import { io } from "../server.js";
 
 const router = express.Router();
 
@@ -30,6 +31,116 @@ router.get("/profile", verifyToken, isAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get(
+  "/count-request-inquiries",
+  verifyToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const countApprovedRequest = await Request.countDocuments({
+        status: { $in: ["Approved", "Out for Delivery"] },
+      });
+      const countRequest = await Request.countDocuments({ status: "Pending" });
+      const countInquiries = await Inquiry.countDocuments({
+        status: { $in: ["Pending", "Viewed"] },
+      });
+
+      const response = countRequest + countInquiries;
+
+      console.log("Total Response", response);
+      console.log("Total Response", countApprovedRequest);
+      res.status(200).json({ response, countApprovedRequest });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+router.get("/request-range-data", verifyToken, async (req, res) => {
+  try {
+    const { startdate, enddate } = req.query;
+    if (!startdate || !enddate) {
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required" });
+    }
+
+    // Convert startdate and enddate to JavaScript Date objects
+    const startDate = new Date(startdate);
+    const endDate = new Date(enddate);
+
+    // Ensure startDate and endDate are in UTC for consistency
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate.setUTCHours(23, 59, 59, 999);
+
+    console.log("Range Start Date (UTC):", startDate.toISOString());
+    console.log("Range End Date (UTC):", endDate.toISOString());
+
+    const totalDataCount = await Request.countDocuments({
+      createdAt: { $gte: startDate, $lte: endDate },
+      status: { $in: ["Completed", "Rejected"] },
+    });
+
+    res
+      .status(200)
+      .json({ totalDataCount, message: "Data fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching request range data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/chicks-quantity-range-data", verifyToken, async (req, res) => {
+  try {
+    const { startdate, enddate } = req.query;
+    if (!startdate || !enddate) {
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required" });
+    }
+
+    const startDate = new Date(startdate);
+    const endDate = new Date(enddate);
+
+    // Ensure UTC consistency
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate.setUTCHours(23, 59, 59, 999);
+
+    console.log("Start Date (UTC):", startDate.toISOString());
+    console.log("End Date (UTC):", endDate.toISOString());
+
+    // Aggregate total quantity within date range
+    const totalQuantityResult = await Request.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          status: { $in: ["Completed", "Rejected"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: "$quantity" }, // Sum the quantity field
+        },
+      },
+    ]);
+
+    // Extract the total quantity or return 0 if no matching records
+    const totalQuantity =
+      totalQuantityResult.length > 0 ? totalQuantityResult[0].totalQuantity : 0;
+
+    console.log(totalQuantity);
+
+    res
+      .status(200)
+      .json({ totalQuantity, message: "Data fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching total quantity data:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -138,11 +249,20 @@ router.get("/resolved-requests", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-router.get("/monthly-request-count", async (req, res) => {
+router.get("/yearly-request-count", async (req, res) => {
   try {
     const { year } = req.query;
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
+    if (!year) {
+      return res.status(400).json({ error: "Year is required" });
+    }
+
+    // Start of the year (January 1, 00:00:00)
+    const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+    // End of the year (December 31, 23:59:59)
+    const endDate = new Date(Date.UTC(year, 11, 31, 23, 59, 59));
+
+    console.log("Yearly Start Date:", startDate.toISOString());
+    console.log("Yearly End Date:", endDate.toISOString());
 
     const requestData = await Request.aggregate([
       {
@@ -178,50 +298,49 @@ router.get("/monthly-request-count", async (req, res) => {
       "December",
     ];
 
-    const formattedData = monthNames.map((months, index) => {
+    const formattedData = monthNames.map((month, index) => {
       const monthData = requestData.find((item) => item._id === index + 1);
       return {
-        months,
+        month,
         Request_Quantity: monthData ? monthData.count : 0,
       };
     });
 
-    console.log(formattedData);
+    console.log("Formatted Yearly Data:", formattedData);
     res.json(formattedData);
   } catch (error) {
-    console.error("Error fetching monthly request data:", error);
+    console.error("Error fetching yearly request data:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-router.get("/monthly-chicks-data", verifyToken, isAdmin, async (req, res) => {
+router.get("/yearly-chicks-data", verifyToken, isAdmin, async (req, res) => {
   const { year } = req.query;
 
-  if (!year) {
-    return res.status(400).json({ message: "Year is required" });
+  if (!year || isNaN(year)) {
+    return res.status(400).json({ message: "Valid year is required" });
   }
 
   try {
-    // MongoDB aggregation to get the total quantity of chicks requested per month for the given year and specific status
+    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endDate = new Date(`${Number(year) + 1}-01-01T00:00:00.000Z`);
+    endDate.setUTCHours(23, 59, 59, 999);
+
+    // MongoDB aggregation query
     const chicksData = await Request.aggregate([
       {
         $match: {
-          status: { $in: ["Completed", "Rejected"] }, // Filter by Completed or Rejected status
-          createdAt: {
-            $gte: new Date(`${year}-01-01T00:00:00.000Z`), // Start of the year
-            $lt: new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`), // Start of the next year
-          },
+          status: { $in: ["Completed", "Rejected"] },
+          createdAt: { $gte: startDate, $lt: endDate },
         },
       },
       {
         $group: {
-          _id: { $month: "$createdAt" }, // Group by month
-          totalQuantity: { $sum: "$quantity" }, // Sum up the quantity of chicks requested
+          _id: { $month: "$createdAt" },
+          totalQuantity: { $sum: { $ifNull: ["$quantity", 0] } },
         },
       },
-      {
-        $sort: { _id: 1 }, // Sort by month in ascending order
-      },
+      { $sort: { _id: 1 } },
       {
         $project: {
           month: "$_id",
@@ -247,11 +366,14 @@ router.get("/monthly-chicks-data", verifyToken, isAdmin, async (req, res) => {
       "December",
     ];
 
-    // Format the data to return the month names and total quantity
-    const formattedChicksData = chicksData.map((item) => ({
-      month: months[item.month - 1],
-      total_quantity: item.total_quantity,
-    }));
+    // Format data
+    const formattedChicksData = Array.from({ length: 12 }, (_, i) => {
+      const monthData = chicksData.find((item) => item.month === i + 1);
+      return {
+        month: months[i],
+        total_quantity: monthData ? monthData.total_quantity : 0, // Ensure all months are represented
+      };
+    });
 
     console.log(formattedChicksData);
     return res.json(formattedChicksData);
@@ -493,6 +615,7 @@ router.put("/update-request-status/:id", async (req, res) => {
     }
 
     await request.save();
+    io.emit("updateRequest", { message: "Request has been updated" });
 
     res.status(200).json({
       message: `Request status updated successfully to '${status}'!`,
@@ -547,6 +670,8 @@ router.put("/update-inquiry-status/:id", async (req, res) => {
 
     await inquiry.save();
 
+    io.emit("updateInquiry", { message: "Inquiry has been updated" });
+
     res.status(200).json({
       message: `Inquiry status updated successfully to '${status}'!`,
       updatedRequest: inquiry,
@@ -595,7 +720,9 @@ router.put(
 
       // Save the updated request
       await selectedRequest.save();
-
+      io.emit("updateApprovedRequest", {
+        message: "Approved Request has been updated.",
+      });
       res.status(200).json({
         message: `Request status updated successfully to '${updateStatus}'!`,
         updatedRequest: selectedRequest,

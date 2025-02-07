@@ -15,6 +15,17 @@ const SignUp = () => {
     secretKey: "",
   });
 
+  const resetFormData = {
+    accountid: "",
+    username: "",
+    email: "",
+    contactnumber: "",
+    password: "",
+    position: "",
+    address: "",
+    secretKey: "",
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -72,14 +83,10 @@ const SignUp = () => {
       };
 
       // Send request to register the user
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        userAccount
-      );
+      await axios.post("/api/auth/register", userAccount);
 
-      console.log("Response from server:", response);
+      resetFormData();
       showNotification("Registration successfully!", "success");
-      alert(response.data.message);
     } catch (error) {
       // Handle errors
       showNotification("The email you entered is already registered.", "error");

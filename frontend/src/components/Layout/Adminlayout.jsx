@@ -1,42 +1,33 @@
 import React, { useEffect, useState } from "react";
 import Header from "../Header/Header";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { LuClipboardCheck, LuClock, LuUserCog } from "react-icons/lu";
 import { MdDashboard, MdOutlinePendingActions } from "react-icons/md";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const AdminLayout = () => {
   const [Open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [adminData, setAdminData] = useState(null);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [approvedCount, setApprovedCount] = useState(0);
 
-  const navigate = useNavigate();
+  const togglehandler = () => setOpen(!Open);
+  const handleLinkClick = () => setOpen(false);
 
-  const togglehandler = () => {
-    setOpen(!Open);
-  };
-
-  const handleLinkClick = () => {
-    setOpen(false);
-  };
+  const token = localStorage.getItem("authToken");
 
   const fetchAdminData = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No token found. Please log in.");
 
-      if (!token) {
-        throw new Error("No token found. Please log in.");
-      }
-
-      const response = await axios.get(
-        "http://localhost:5000/api/admin/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get("/api/admin/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.data) {
         setAdminData(response.data);
@@ -51,13 +42,40 @@ const AdminLayout = () => {
     }
   };
 
+  const countNotification = async () => {
+    try {
+      const response = await axios.get("/api/admin/count-request-inquiries", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setPendingCount(response.data.response);
+      setApprovedCount(response.data.countApprovedRequest);
+    } catch (error) {
+      console.log("Failed to fetch notification count:", error);
+    }
+  };
+
   useEffect(() => {
+    if (!token) return;
+
     fetchAdminData();
-  }, []);
+    countNotification();
+
+    socket.on("newRequest", countNotification);
+    socket.on("updateRequest", countNotification);
+    socket.on("updateInquiry", countNotification);
+    socket.on("updateApprovedRequest", countNotification);
+
+    return () => {
+      socket.off("newRequest", countNotification);
+      socket.off("updateRequest", countNotification);
+      socket.off("updateInquiry", countNotification);
+      socket.off("updateApprovedRequest", countNotification);
+    };
+  }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
-    localStorage.removeItem("tokenExpirationTime");
     window.location.reload();
   };
 
@@ -97,7 +115,7 @@ const AdminLayout = () => {
               <ul className="flex flex-col md:flex-row justify-around items-center h-full gap-10">
                 <NavLink
                   to="/admin-dashboard"
-                  onClick={handleLinkClick} // Close menu on click
+                  onClick={handleLinkClick}
                   className={({ isActive }) =>
                     `flex flex-col items-center cursor-pointer ${
                       isActive ? "text-green-500" : "hover:text-green-500"
@@ -109,37 +127,50 @@ const AdminLayout = () => {
                     Dashboard
                   </li>
                 </NavLink>
+
                 <NavLink
                   to="/request-pending"
-                  onClick={handleLinkClick} // Close menu on click
+                  onClick={handleLinkClick}
                   className={({ isActive }) =>
                     `flex flex-col items-center cursor-pointer ${
                       isActive ? "text-green-500" : "hover:text-green-500"
                     }`
                   }
                 >
-                  <li className="flex flex-col items-center">
+                  <li className="flex flex-col items-center relative">
                     <MdOutlinePendingActions className="w-auto h-8" />
-                    Request Pending
+                    {pendingCount > 0 && (
+                      <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                        {pendingCount}
+                      </span>
+                    )}
+                    Request & Inquiry
                   </li>
                 </NavLink>
+
                 <NavLink
                   to="/approved-request"
-                  onClick={handleLinkClick} // Close menu on click
+                  onClick={handleLinkClick}
                   className={({ isActive }) =>
                     `flex flex-col items-center cursor-pointer ${
                       isActive ? "text-green-500" : "hover:text-green-500"
                     }`
                   }
                 >
-                  <li className="flex flex-col items-center">
+                  <li className="flex flex-col items-center relative">
                     <LuClipboardCheck className="w-auto h-8" />
+                    {approvedCount > 0 && (
+                      <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                        {approvedCount}
+                      </span>
+                    )}
                     Approved Request
                   </li>
                 </NavLink>
+
                 <NavLink
                   to="/history"
-                  onClick={handleLinkClick} // Close menu on click
+                  onClick={handleLinkClick}
                   className={({ isActive }) =>
                     `flex flex-col items-center cursor-pointer ${
                       isActive ? "text-green-500" : "hover:text-green-500"
@@ -151,9 +182,10 @@ const AdminLayout = () => {
                     History Records
                   </li>
                 </NavLink>
+
                 <NavLink
                   to="/accounts"
-                  onClick={handleLinkClick} // Close menu on click
+                  onClick={handleLinkClick}
                   className={({ isActive }) =>
                     `flex flex-col items-center cursor-pointer ${
                       isActive ? "text-green-500" : "hover:text-green-500"

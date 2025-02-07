@@ -131,9 +131,9 @@ const RequestPending = () => {
   };
 
   const fetchData = async () => {
+    const token = localStorage.getItem("authToken");
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("authToken");
       const [requestResponse, inquiryResponse] = await Promise.all([
         axios.get("/api/admin/list-pending-request", {
           headers: { Authorization: `Bearer ${token}` },

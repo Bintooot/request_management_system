@@ -99,12 +99,7 @@ const DataCard = ({ data, onClick }) => {
                 {data.status}
               </span>
             </div>
-            <div>
-              <p className="text-gray-500 text-sm">Expected Delivery Date</p>
-              <p className="font-medium text-gray-800">
-                {safeFormatDate(data.deliveryDate)}
-              </p>
-            </div>
+
             <div className="col-span-3">
               <p className="text-gray-500 text-sm">Description</p>
               <p className="font-medium text-gray-800">{data.description}</p>
@@ -147,7 +142,7 @@ const DataCard = ({ data, onClick }) => {
           <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
             Admin Feedback
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <div>
               <p className="text-gray-500 text-sm">Reviewed By</p>
               <p className="font-medium text-gray-800">
@@ -158,6 +153,12 @@ const DataCard = ({ data, onClick }) => {
               <p className="text-gray-500 text-sm">Admin Feedback</p>
               <p className="font-medium text-gray-800">
                 {data.adminFeedback || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Expected Delivery Date</p>
+              <p className="font-medium text-gray-800">
+                {safeFormatDate(data.deliveryDate)}
               </p>
             </div>
             <div>
