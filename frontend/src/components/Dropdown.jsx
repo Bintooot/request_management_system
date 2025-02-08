@@ -1,6 +1,6 @@
 import React from "react";
 
-const Dropdown = ({ statusdata, onChange, value }) => {
+const Dropdown = ({ statusdata = [], onChange, value }) => {
   return (
     <div>
       <label htmlFor="updatestatus" className="font-medium text-sm">
@@ -12,13 +12,14 @@ const Dropdown = ({ statusdata, onChange, value }) => {
         className="w-full border-2 p-2 text-sm"
         onChange={(e) => onChange(e.target.value)}
         value={value}
+        required
       >
-        <option selected disabled>
+        <option value="" disabled selected>
           Select Status
         </option>
-        {statusdata.map((status, index) => (
-          <option key={index} value={status}>
-            {status}
+        {statusdata.map((status) => (
+          <option key={status.id || status} value={status.id || status}>
+            {status.name || status}
           </option>
         ))}
       </select>

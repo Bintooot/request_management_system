@@ -17,6 +17,7 @@ const RequestPending = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("success");
+  const [error, setError] = useState(false);
 
   // Request state
   const [listPendingRequest, setListPendingRequest] = useState([]);
@@ -28,8 +29,8 @@ const RequestPending = () => {
   const [viewInquiry, setViewInquiry] = useState(null);
 
   // Common state
-  const [updateStatus, setUpdateStatus] = useState("");
-  const [adminFeedback, setAdminFeedback] = useState("");
+  const [updateStatus, setUpdateStatus] = useState(null);
+  const [adminFeedback, setAdminFeedback] = useState(null);
 
   const showNotification = (message, type = "success") => {
     setStatusMessage(message);
@@ -41,19 +42,18 @@ const RequestPending = () => {
   const handleViewRequest = (request) => {
     setViewRequest(request);
     setViewInquiry(null);
-    setUpdateStatus(request.status);
-    setAdminFeedback("");
   };
 
   const handleViewInquiry = (inquiry) => {
     setViewInquiry(inquiry);
     setViewRequest(null);
-    setUpdateStatus(inquiry.status);
-    setAdminFeedback("");
   };
 
   const handleRequestUpdate = async () => {
-    if (!viewRequest) return;
+    if (!updateStatus) {
+      showNotification("Status is required", "error");
+      return;
+    }
 
     const currentDate = new Date();
     const selectedDeliveryDate = new Date(deliveryDate);
@@ -94,12 +94,13 @@ const RequestPending = () => {
   };
 
   const handleInquiryUpdate = async () => {
-    if (!viewInquiry) return;
+    console.log(viewInquiry.status);
 
     try {
       const response = await axios.put(
         `/api/admin/update-inquiry-status/${viewInquiry._id}`,
         {
+          currentstatus: viewInquiry.status,
           status: updateStatus,
           adminFeedback,
           reviewedby: adminData.username,
@@ -339,6 +340,7 @@ const RequestPending = () => {
                           Admin Feedback:
                         </label>
                         <textarea
+                          required
                           className="w-full border-2 rounded-lg p-2 h-32"
                           value={adminFeedback}
                           onChange={(e) => setAdminFeedback(e.target.value)}
@@ -351,6 +353,7 @@ const RequestPending = () => {
                             Delivery Date:
                           </label>
                           <input
+                            required
                             type="datetime-local"
                             className="w-full border-2 rounded-lg p-2"
                             value={deliveryDate}

@@ -630,12 +630,18 @@ router.put("/update-request-status/:id", async (req, res) => {
 });
 
 router.put("/update-inquiry-status/:id", async (req, res) => {
-  const { status, adminFeedback, reviewedby } = req.body;
+  const { currentstatus, status, adminFeedback, reviewedby } = req.body;
   const inquiryId = req.params.id;
 
   if (!status) {
     return res.status(400).json({
       error: "Status is required.",
+    });
+  }
+
+  if (currentstatus === status) {
+    return res.status(400).json({
+      error: `Status is already ${currentstatus}`,
     });
   }
 
@@ -690,14 +696,18 @@ router.put(
   isAdmin,
   async (req, res) => {
     try {
-      const { updateStatus } = req.body;
+      const { currentstatus, updateStatus } = req.body;
       const requestId = req.params.id;
-      console.log(updateStatus);
-      console.log(requestId);
 
       if (!updateStatus) {
         return res.status(400).json({
-          error: "Status is required.",
+          error: "Select status to update!",
+        });
+      }
+
+      if (currentstatus == updateStatus) {
+        return res.status(400).json({
+          error: `Request is already ${currentstatus}`,
         });
       }
 

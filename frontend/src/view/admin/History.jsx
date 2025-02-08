@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Button from "../../components/Button";
-import Dropdown from "../../components/Dropdown";
-import CustomModal from "../../components/Modal/CustomModal";
+import InquiryCard from "../../components/Card/InquiryCard";
 import { format } from "date-fns";
 import axios from "axios";
 import { Tab } from "@headlessui/react";
+import RequestCard from "../../components/Card/RequestCard";
 
 const History = () => {
   const [approvedList, setApprovedList] = useState({
@@ -16,11 +16,16 @@ const History = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // Modal state
+  // Modal state for Request
   const [openModal, setOpenModal] = useState(false);
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
+  // Modal state for Inquiry
+  const [openInquiryModal, setOpenInquiryModal] = useState(false);
+  const handleOpenInquiry = () => setOpenInquiryModal(true);
+  const handleCloseInquiry = () => setOpenInquiryModal(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedInquiry, setSelectedInquiry] = useState(null);
 
   // Fetch data function remains the same
   const fetchAllData = async () => {
@@ -50,6 +55,11 @@ const History = () => {
 
   const handleSelectedRequest = (item) => {
     setSelectedRequest(item);
+  };
+
+  const handleSelectedInquiry = (items) => {
+    console.log("Inquiry");
+    setSelectedInquiry(items);
   };
 
   const filterRecords = (records) => {
@@ -190,7 +200,7 @@ const History = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Button
-                          name="View Details"
+                          name="View Request"
                           onClick={() => {
                             handleOpen();
                             handleSelectedRequest(item);
@@ -262,10 +272,10 @@ const History = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Button
-                          name="View Details"
+                          name="View Inquiry"
                           onClick={() => {
-                            handleOpen();
-                            handleSelectedRequest(item);
+                            handleOpenInquiry();
+                            handleSelectedInquiry(item);
                           }}
                           className="text-sm"
                         />
@@ -280,10 +290,18 @@ const History = () => {
       </Tab.Group>
 
       {selectedRequest && (
-        <CustomModal
-          open={openModal}
+        <RequestCard
           handleClose={handleClose}
-          request={selectedRequest}
+          open={openModal}
+          items={selectedRequest}
+        />
+      )}
+
+      {selectedInquiry && (
+        <InquiryCard
+          handleClose={handleCloseInquiry}
+          open={openInquiryModal}
+          inquiry={selectedInquiry}
         />
       )}
     </div>

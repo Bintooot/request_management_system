@@ -55,18 +55,14 @@ const ApprovedRequest = () => {
   const handleSubmit = async (request) => {
     try {
       if (!request) {
-        alert("No request selected.");
-        return;
-      }
-
-      if (!updateStatus) {
-        alert("Select a kind of Status to Update.");
+        showNotification("No request selected.", "error");
         return;
       }
 
       const response = await axios.put(
         `/api/admin/update-approved-request/${request._id}`,
         {
+          currentstatus: request.status,
           updateStatus,
         },
         {
@@ -106,7 +102,7 @@ const ApprovedRequest = () => {
       {/* Table */}
       <div className="overflow-x-auto h-96">
         {isLoading ? (
-          <div className="text-center py-4">Loading...</div>
+          <div className="text-center py-2">Loading...</div>
         ) : error ? (
           <div className="text-center text-red-500 py-4">{error}</div>
         ) : (
@@ -142,26 +138,26 @@ const ApprovedRequest = () => {
             <tbody>
               {approvedList.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="p-4 text-center text-gray-500">
+                  <td colSpan="8" className="p-2 text-center text-gray-500">
                     No approved requests available.
                   </td>
                 </tr>
               ) : (
                 approvedList.map((item) => (
                   <tr key={item._id} className="hover:bg-slate-200">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.generatedRequestNo}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.requesterName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.reviewedby}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.chicksType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.createdAt &&
                       new Date(item.createdAt) !== "Invalid Date"
                         ? format(
@@ -170,7 +166,7 @@ const ApprovedRequest = () => {
                           )
                         : "Invalid Date"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       {item.updatedAt &&
                       new Date(item.updatedAt) !== "Invalid Date"
                         ? format(
@@ -180,7 +176,7 @@ const ApprovedRequest = () => {
                         : "Invalid Date"}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span
                         className={`p-1 rounded-lg text-xs md:text-sm ${
                           item.status === "Approved"
@@ -192,23 +188,27 @@ const ApprovedRequest = () => {
                       </span>
                     </td>
 
-                    <td className="flex flex-col md:flex-row gap-2 py-2">
-                      <Dropdown
-                        statusdata={["Out for Delivery", "Completed"]}
-                        onChange={(value) => setUpdateStatus(value)}
-                      />
-                      <Button
-                        name="Full Details"
-                        onClick={() => {
-                          handleOpen();
-                          setSelectedRequest(item);
-                        }}
-                        hoverbgcolor="hover:bg-orange-400"
-                      />
-                      <Button
-                        name="Submit"
-                        onClick={() => handleSubmit(item)}
-                      />
+                    <td className="block">
+                      <div>
+                        <Dropdown
+                          statusdata={["Out for Delivery", "Completed"]}
+                          onChange={(value) => setUpdateStatus(value)}
+                        />
+                      </div>
+                      <div className="flex gap-2 py-2 justify-center">
+                        <Button
+                          name="Full Details"
+                          onClick={() => {
+                            handleOpen();
+                            setSelectedRequest(item);
+                          }}
+                          hoverbgcolor="hover:bg-orange-400"
+                        />
+                        <Button
+                          name="Submit"
+                          onClick={() => handleSubmit(item)}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))

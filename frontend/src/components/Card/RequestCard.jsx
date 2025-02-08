@@ -47,6 +47,8 @@ const RequestCard = ({ items, open, handleClose }) => {
             </div>
           </div>
 
+          <hr className="border-1 border-black my-2" />
+
           {/* Request Details Section */}
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">
@@ -91,6 +93,8 @@ const RequestCard = ({ items, open, handleClose }) => {
                       ? "bg-orange-100 text-orange-800"
                       : items.status === "Completed"
                       ? "bg-green-100 text-green-800"
+                      : items.status == "Rejected"
+                      ? "bg-red-100 text-red-800"
                       : ""
                   }`}
                 >
@@ -162,7 +166,7 @@ const RequestCard = ({ items, open, handleClose }) => {
               <p className="font-medium text-gray-800">{items.description}</p>
             </div>
           </div>
-
+          <hr className="border-1 border-black my-2" />
           {/* Admin Feedback Section */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-2">
