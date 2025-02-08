@@ -180,7 +180,7 @@ const RequestCard = ({ items, open, handleClose }) => {
                 </p>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Reviewed Date:</p>
+                <p className="text-gray-500 text-sm">Approved Date:</p>
                 <p className="font-medium text-gray-800">
                   {items.reviewedDate
                     ? format(
@@ -190,6 +190,7 @@ const RequestCard = ({ items, open, handleClose }) => {
                     : "Not set"}
                 </p>
               </div>
+
               <div>
                 <p className="text-gray-500 text-sm">Out for Delivery Date:</p>
                 <p className="font-medium text-gray-800">
@@ -207,6 +208,17 @@ const RequestCard = ({ items, open, handleClose }) => {
                   {items.completedDate
                     ? format(
                         new Date(items.completedDate),
+                        "MMMM dd, yyyy hh:mm a"
+                      )
+                    : "Not set"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Rejected Date:</p>
+                <p className="font-medium text-gray-800">
+                  {items.rejectedDate
+                    ? format(
+                        new Date(items.rejectedDate),
                         "MMMM dd, yyyy hh:mm a"
                       )
                     : "Not set"}

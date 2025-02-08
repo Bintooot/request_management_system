@@ -206,6 +206,8 @@ const Inquire = () => {
           <p>Loading inquiries...</p>
         ) : userInquiry.length === 0 ? (
           <p>No inquiries available.</p>
+        ) : filterInquiries(inquiryStatus).length === 0 ? (
+          <p className="text-center text-gray-500">No data found.</p>
         ) : (
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {filterInquiries(inquiryStatus).map((items) => (

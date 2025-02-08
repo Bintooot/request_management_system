@@ -162,7 +162,7 @@ const DataCard = ({ data, onClick }) => {
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Reviewed Date:</p>
+              <p className="text-gray-500 text-sm">Approved Date:</p>
               <p className="font-medium text-gray-800">
                 {safeFormatDate(data.reviewedDate)}
               </p>
