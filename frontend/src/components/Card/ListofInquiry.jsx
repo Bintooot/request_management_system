@@ -31,6 +31,8 @@ const ListofInquiries = ({ onClick, inquiries }) => {
                   ? "bg-green-500"
                   : inquiry.status === "Pending"
                   ? "bg-orange-400"
+                  : inquiry.status === "Viewed"
+                  ? "bg-blue-500"
                   : "bg-red-500"
               }`}
             >

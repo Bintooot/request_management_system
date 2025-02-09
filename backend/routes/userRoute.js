@@ -325,7 +325,14 @@ router.put("/update-profile/:id", verifyToken, async (req, res) => {
 
 router.post(
   "/submit-request",
-  fileMiddleware.single("file"),
+  (req, res, next) => {
+    fileMiddleware.single("file")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  },
   verifyToken,
   isUser,
   async (req, res) => {
@@ -343,8 +350,12 @@ router.post(
 
     const userId = req.user.userId;
 
+    if (!chicksType) {
+      return res.status(400).json({ message: "Select a type of chicks." });
+    }
+
     if (!req.file) {
-      return res.status(400).send("No file uploaded.");
+      return res.status(400).json({ message: "No file selected." });
     }
 
     try {
@@ -354,18 +365,14 @@ router.post(
 
       if (existingRequest) {
         if (
-          existingRequest.status === "Pending" ||
-          existingRequest.status === "Approved" ||
-          existingRequest.status === "Out for Delivery"
+          ["Pending", "Approved", "Out for Delivery"].includes(
+            existingRequest.status
+          )
         ) {
           return res.status(400).json({
             message: `You cannot submit a new request because your current request is still in progress (${existingRequest.status}).`,
           });
         }
-
-        console.log(
-          "Previous request was completed, canceled, or rejected. User can submit a new request."
-        );
       }
 
       const generatedRequestNo = `REQ-${Date.now()}`;
@@ -457,7 +464,14 @@ router.post(
   "/submit-inquiry",
   verifyToken,
   isUser,
-  fileMiddleware.single("file"),
+  (req, res, next) => {
+    fileMiddleware.single("file")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  },
   async (req, res) => {
     try {
       const userId = req.user.userId;

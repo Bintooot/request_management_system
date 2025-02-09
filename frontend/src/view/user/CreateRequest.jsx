@@ -103,14 +103,7 @@ const CreateRequest = () => {
     if (!numberofrequester)
       errors.numberofrequester = "Number of persons is required";
     if (!description) errors.description = "Description is required";
-    if (!file) errors.file = "File is required";
-
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      setLoading(false);
-      showNotification("Please fill in all the required fields.", "error");
-      return;
-    }
+    if (!file || file === null) errors.file = "File is required";
 
     const formData = new FormData();
     formData.append("requesterName", requesterName);
@@ -129,16 +122,12 @@ const CreateRequest = () => {
     console.log(formData);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/user/submit-request",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post("/api/user/submit-request", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setLoading(false);
       showNotification("Request successfully submitted!", "success");
@@ -156,7 +145,7 @@ const CreateRequest = () => {
         showNotification(error.response.data.message, "error");
       } else {
         // Show a generic error message if the backend doesn't return a message
-        showNotification("Something went wrong. Please try again.", "error");
+        showNotification(error.response.data.message, "error");
       }
 
       console.error("Error creating request:", error);
@@ -378,6 +367,9 @@ const CreateRequest = () => {
                   onChange={handleFileChange}
                   className="mt-1 p-2 border-2 block w-full rounded-md border-gray-300 shadow-sm"
                 />
+                <span className="text-red-500 text-sm">
+                  Allowed: PDF, DOC, DOCX, JPG, JPEG
+                </span>
               </div>
             </div>
 
@@ -470,6 +462,7 @@ const CreateRequest = () => {
                 <input
                   id="location"
                   type="text"
+                  required
                   name="location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}

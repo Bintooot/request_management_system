@@ -102,16 +102,12 @@ const Inquire = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        "http://localhost:5000/api/user/submit-inquiry",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post("/api/user/submit-inquiry", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setLoading(false);
       showNotification("Inquiry successfully submitted!", "success");
@@ -120,11 +116,9 @@ const Inquire = () => {
       resetForm();
     } catch (error) {
       setLoading(false);
-      console.error(
-        "Error creating inquiry:",
-        error.response?.data || error.message
-      );
-      showNotification("Failed to submit inquiry. Try again.", "error");
+      const errorMessage =
+        error.response?.data?.message || "An error occurred.";
+      showNotification(errorMessage, "error");
     }
   };
 
