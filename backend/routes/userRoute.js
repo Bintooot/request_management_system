@@ -4,6 +4,7 @@ import fileMiddleware from "../middleware/fileMiddleware.js";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
 import Inquiry from "../models/Inquiry.js";
+import Notification from "../models/Norification.js";
 import ContactUs from "../models/ContactUs.js";
 import mongoose from "mongoose";
 
@@ -33,6 +34,67 @@ router.get("/profile", verifyToken, isUser, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/notifications-count", verifyToken, isUser, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Count unread notifications
+    const unreadCount = await Notification.countDocuments({
+      userId: userId,
+      read: false,
+    });
+
+    res.status(200).json({ unreadCount });
+  } catch (error) {
+    console.error("Error fetching notification count:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/notification-data", verifyToken, isUser, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userNotifications = await Notification.find({
+      userId: userId,
+    }).sort({ createdAt: -1 });
+
+    if (userNotifications.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No notifications found", data: [] });
+    }
+
+    res.status(200).json({ data: userNotifications });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/mark-as-read/:id", verifyToken, isUser, async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+
+    const updatedNotification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { read: true },
+      { new: true }
+    );
+
+    if (!updatedNotification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    io.emit("unRead", { message: "Notfication has been unread." });
+
+    res.status(200).json({ message: "Notification marked as read" });
+  } catch (error) {
+    console.error("Error updating notification:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

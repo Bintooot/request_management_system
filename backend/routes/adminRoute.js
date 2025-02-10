@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import Request from "../models/Request.js";
 import Inquiry from "../models/Inquiry.js";
 import { io } from "../server.js";
+import Notification from "../models/Norification.js";
 
 const router = express.Router();
 
@@ -615,6 +616,15 @@ router.put("/update-request-status/:id", async (req, res) => {
     }
 
     await request.save();
+
+    await Notification.create({
+      userId: request.requesterid,
+      id: request.generatedRequestNo,
+      type: "Request Update",
+      message: `Your request has been ${status}.`,
+      isAdmin: false,
+    });
+
     io.emit("updateRequest", { message: "Request has been updated" });
 
     res.status(200).json({
@@ -629,66 +639,79 @@ router.put("/update-request-status/:id", async (req, res) => {
   }
 });
 
-router.put("/update-inquiry-status/:id", async (req, res) => {
-  const { currentstatus, status, adminFeedback, reviewedby } = req.body;
-  const inquiryId = req.params.id;
+router.put(
+  "/update-inquiry-status/:id",
+  verifyToken,
+  isAdmin,
+  async (req, res) => {
+    const { currentstatus, status, adminFeedback, reviewedby } = req.body;
+    const inquiryId = req.params.id;
 
-  if (!status) {
-    return res.status(400).json({
-      error: "Status is required.",
-    });
-  }
-
-  if (currentstatus === status) {
-    return res.status(400).json({
-      error: `Status is already ${currentstatus}`,
-    });
-  }
-
-  if (status === "Resolved" && !adminFeedback) {
-    return res.status(400).json({
-      error: "Admin feedback is required.",
-    });
-  }
-
-  // gi kuha ang current date.
-  const statusChangedAt = new Date().toISOString();
-
-  try {
-    const inquiry = await Inquiry.findById(inquiryId);
-
-    if (!inquiry) {
-      return res.status(404).json({ error: "Inquiry not found." });
+    if (!status) {
+      return res.status(400).json({
+        error: "Status is required.",
+      });
     }
 
-    inquiry.status = status;
-    inquiry.adminFeedback = adminFeedback;
-    inquiry.reviewedby = reviewedby;
-
-    // check kong ang status kay resolved or viewed then save the date.
-    if (status === "Resolved") {
-      inquiry.resolvedAt = statusChangedAt;
+    if (currentstatus === status) {
+      return res.status(400).json({
+        error: `Status is already ${currentstatus}`,
+      });
     }
 
-    if (status === "Viewed") {
-      inquiry.viewedAt = statusChangedAt;
+    if (status === "Resolved" && !adminFeedback) {
+      return res.status(400).json({
+        error: "Admin feedback is required.",
+      });
     }
 
-    await inquiry.save();
+    // gi kuha ang current date.
+    const statusChangedAt = new Date().toISOString();
 
-    io.emit("updateInquiry", { message: "Inquiry has been updated" });
+    try {
+      const inquiry = await Inquiry.findById(inquiryId);
 
-    res.status(200).json({
-      message: `Inquiry status updated successfully to '${status}'!`,
-      updatedRequest: inquiry,
-    });
-  } catch (error) {
-    console.error("Error updating request:", error);
-    res
-      .status(500)
-      .json({ error: "Server error, failed to update request status." });
+      if (!inquiry) {
+        return res.status(404).json({ error: "Inquiry not found." });
+      }
+
+      inquiry.status = status;
+      inquiry.adminFeedback = adminFeedback;
+      inquiry.reviewedby = reviewedby;
+
+      // check kong ang status kay resolved or viewed then save the date.
+      if (status === "Resolved") {
+        inquiry.resolvedAt = statusChangedAt;
+      }
+
+      if (status === "Viewed") {
+        inquiry.viewedAt = statusChangedAt;
+      }
+
+      await inquiry.save();
+
+      await Notification.create({
+        userId: inquiry.userId,
+        id: inquiry.inquiryId,
+        type: "Inquiry Update",
+        message: `Your Inquiry has been ${status}.`,
+        isAdmin: false,
+      });
+
+      io.emit("updateInquiry", { message: "Inquiry has been updated" });
+
+      res.status(200).json({
+        message: `Inquiry status updated successfully to '${status}'!`,
+        updatedRequest: inquiry,
+      });
+    } catch (error) {
+      console.error("Error updating request:", error);
+      res
+        .status(500)
+        .json({ error: "Server error, failed to update request status." });
+    }
   }
-});
+);
 
 router.put(
   "/update-approved-request/:id",
@@ -730,9 +753,19 @@ router.put(
 
       // Save the updated request
       await selectedRequest.save();
+
+      await Notification.create({
+        userId: selectedRequest.requesterid,
+        id: selectedRequest.generatedRequestNo,
+        type: "Request Update",
+        message: `Your request has been ${updateStatus}.`,
+        isAdmin: false,
+      });
+
       io.emit("updateApprovedRequest", {
         message: "Approved Request has been updated.",
       });
+
       res.status(200).json({
         message: `Request status updated successfully to '${updateStatus}'!`,
         updatedRequest: selectedRequest,

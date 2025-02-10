@@ -22,6 +22,7 @@ import AboutUs from "./view/landingpage/AboutUs";
 import ContactUs from "./view/landingpage/ContactUs";
 import LandingPageLayout from "./components/Layout/LandingPageLayout";
 import ForgotPassword from "./view/auth/ForgotPassword/ForgotPassword";
+import Notification from "./components/Norification/Notification";
 
 import ProtectedRoute from "./components/ProtectedPage/ProtectedRoute"; // Import ProtectedRoute
 
@@ -139,6 +140,14 @@ function App() {
               element={
                 <ProtectedRoute role="user">
                   <RequestRecord />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notification"
+              element={
+                <ProtectedRoute role="user">
+                  <Notification />
                 </ProtectedRoute>
               }
             />

@@ -29,7 +29,7 @@ const FixedLayout = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      console.log(response.data);
       setUser(response.data);
     } catch (error) {
       setError(error.message);
@@ -61,6 +61,7 @@ const FixedLayout = () => {
     <div>
       <Header
         toggleHandler={toggleHandler}
+        role={user?.role}
         username={user?.username || "User"}
         handleLogout={handleLogout}
       />

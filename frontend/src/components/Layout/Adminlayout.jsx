@@ -105,7 +105,7 @@ const AdminLayout = () => {
               </div>
             </div>
           </div>
-          <div className="w-full md:px-28 absolute top-44">
+          <div className="w-full md:px-28 absolute top-44 z-50">
             {/* Navigation Links */}
             <div
               className={`${

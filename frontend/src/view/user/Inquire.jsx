@@ -35,6 +35,7 @@ const Inquire = () => {
       });
 
       const inquiries = response.data?.inquiryresponse || [];
+      console.log(inquiries);
       setUserInquiry(inquiries);
     } catch (error) {
       console.error(
@@ -211,9 +212,12 @@ const Inquire = () => {
               >
                 <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
                   <div>
-                    <h3 className="font-medium text-lg">{items.subject}</h3>
+                    <h2 className="font-medium text-lg border-b-2 mb-2">
+                      {items.inquiryId}
+                    </h2>
+                    <h3 className="font-semibold">Subject: {items.subject}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {items.message}
+                      Message: {items.message}
                     </p>
                   </div>
                   <span

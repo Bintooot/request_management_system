@@ -7,10 +7,10 @@ const NotificationSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    id: { type: String, required: true },
     type: { type: String, required: true },
     message: { type: String, required: true },
     read: { type: Boolean, default: false },
-    cratedAt: { type: Date, default: Date.now },
     isAdmin: { type: Boolean, default: false },
   },
   {
@@ -18,6 +18,6 @@ const NotificationSchema = new mongoose.Schema(
   }
 );
 
-const Notification = mongoose.model("notification", NotificationSchema);
+const Notification = mongoose.model("Notification", NotificationSchema);
 
 export default Notification;
