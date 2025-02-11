@@ -68,7 +68,7 @@ const Header = ({ toggleHandler, username, role, handleLogout }) => {
         {role === "user" && (
           <div className="relative">
             <NavLink to="/notification">
-              <FaBell className="text-2xl" />
+              <FaBell className="text-xl" />
               {notificationCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                   {notificationCount}

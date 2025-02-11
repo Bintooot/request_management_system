@@ -728,7 +728,7 @@ router.put(
         });
       }
 
-      if (currentstatus == updateStatus) {
+      if (currentstatus === updateStatus) {
         return res.status(400).json({
           error: `Request is already ${currentstatus}`,
         });
@@ -736,36 +736,64 @@ router.put(
 
       const selectedRequest = await Request.findById(requestId);
 
-      console.log(selectedRequest);
-
       if (!selectedRequest) {
         return res.status(404).json({ error: "Request not found." });
       }
 
       const currentDate = new Date();
-      if (updateStatus === "Out for Delivery") {
+
+      if (
+        selectedRequest.status === "Approved" &&
+        updateStatus === "Completed"
+      ) {
+        return res
+          .status(400)
+          .json({ error: `Set the status first to "Out for Delivery"` });
+      }
+
+      if (
+        selectedRequest.status === "Approved" &&
+        updateStatus === "Out for Delivery"
+      ) {
         selectedRequest.status = updateStatus;
         selectedRequest.outForDeliveryDate = currentDate;
-      } else if (updateStatus === "Completed") {
+      } else if (
+        selectedRequest.status === "Out for Delivery" &&
+        updateStatus === "Out for Delivery"
+      ) {
+        return res.status(400).json({
+          error: `Request status is already '${selectedRequest.status}'`,
+        });
+      } else if (
+        selectedRequest.status === "Out for Delivery" &&
+        updateStatus === "Completed"
+      ) {
         selectedRequest.status = updateStatus;
         selectedRequest.completedDate = currentDate;
+      } else {
+        return res.status(400).json({
+          error: "Invalid status transition.",
+        });
       }
 
       // Save the updated request
       await selectedRequest.save();
 
+      // Create Notification
       await Notification.create({
         userId: selectedRequest.requesterid,
         id: selectedRequest.generatedRequestNo,
         type: "Request Update",
-        message: `Your request has been ${updateStatus}.`,
+        message: `Your request has been updated to "${updateStatus}".`,
         isAdmin: false,
       });
 
+      // Emit event before sending response
       io.emit("updateApprovedRequest", {
-        message: "Approved Request has been updated.",
+        message: "Approved request has been updated.",
       });
 
+      // Send success response
       res.status(200).json({
         message: `Request status updated successfully to '${updateStatus}'!`,
         updatedRequest: selectedRequest,

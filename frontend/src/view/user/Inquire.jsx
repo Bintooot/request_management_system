@@ -18,6 +18,7 @@ const Inquire = () => {
 
   const [inquiryStatus, setInquiryStatus] = useState("All");
   const [userInquiry, setUserInquiry] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchUserInquiry = async () => {
     const token = localStorage.getItem("authToken");
@@ -48,9 +49,24 @@ const Inquire = () => {
     }
   };
 
-  const filterInquiries = (status) => {
-    if (status === "All") return userInquiry;
-    return userInquiry.filter((inquiry) => inquiry.status === status);
+  const filterInquiries = (status, searchTerm = "") => {
+    let filteredInquiries = userInquiry;
+
+    // Filter by status
+    if (status !== "All") {
+      filteredInquiries = filteredInquiries.filter(
+        (inquiry) => inquiry.status === status
+      );
+    }
+
+    // Filter by search term (inquiryId)
+    if (searchTerm) {
+      filteredInquiries = filteredInquiries.filter((inquiry) =>
+        inquiry.inquiryId.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredInquiries;
   };
 
   useEffect(() => {
@@ -124,88 +140,106 @@ const Inquire = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
-        Submit an Inquiry
-      </h1>
-      {notificationVisible && (
-        <Notification message={statusMessage} type={statusType} />
-      )}
+    <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6 lg:p-8">
+      <div className="w-full lg:w-1/2">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+          Submit an Inquiry
+        </h1>
+        {notificationVisible && (
+          <Notification message={statusMessage} type={statusType} />
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="subject" className="block text-sm font-medium mb-1">
-            Subject
-          </label>
-          <input
-            type="text"
-            id="subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            required
-            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="subject" className="block text-sm font-medium mb-1">
+              Subject
+            </label>
+            <input
+              type="text"
+              id="subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+              className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium mb-1">
-            Message
-          </label>
-          <textarea
-            id="message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            required
-            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+          <div>
+            <label htmlFor="message" className="block text-sm font-medium mb-1">
+              Message
+            </label>
+            <textarea
+              id="message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              required
+              className="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="fileInput" className="block text-sm font-medium mb-1">
-            Attachment (optional)
-          </label>
-          <input
-            type="file"
-            id="fileInput"
-            onChange={handleFileChange}
-            className="w-full p-2 border rounded-md"
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="fileInput"
+              className="block text-sm font-medium mb-1"
+            >
+              Attachment (optional)
+            </label>
+            <input
+              type="file"
+              id="fileInput"
+              onChange={handleFileChange}
+              className="w-full p-2 border rounded-md"
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
-        >
-          {loading ? "Submitting..." : "Submit Inquiry"}
-        </button>
-      </form>
-
-      <div className="mt-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
-            Previous Inquiries
-          </h1>
-          <select
-            name="status"
-            id="status"
-            className="p-2 rounded-md border-2"
-            onChange={(e) => setInquiryStatus(e.target.value)}
+          <button
+            type="submit"
+            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
           >
-            <option value="All">All Inquiries</option>
-            <option value="Pending">Pending</option>
-            <option value="Viewed">Viewed</option>
-            <option value="Resolved">Resolved</option>
-          </select>
+            {loading ? "Submitting..." : "Submit Inquiry"}
+          </button>
+        </form>
+      </div>
+
+      <div className="w-full lg:w-1/2">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex-1">
+            <div className="w-full">
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+                Previous Inquiries
+              </h1>
+            </div>
+            <div className="flex justify-between gap-5">
+              <input
+                type="text"
+                placeholder="Search ID"
+                className="p-2 rounded-md border-2 grow"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select
+                name="status"
+                id="status"
+                className="p-2 rounded-md border-2"
+                onChange={(e) => setInquiryStatus(e.target.value)}
+              >
+                <option value="All">All Inquiries</option>
+                <option value="Pending">Pending</option>
+                <option value="Viewed">Viewed</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </div>
+          </div>
         </div>
         {loading ? (
           <p>Loading inquiries...</p>
         ) : userInquiry.length === 0 ? (
           <p>No inquiries available.</p>
-        ) : filterInquiries(inquiryStatus).length === 0 ? (
+        ) : filterInquiries(inquiryStatus, searchTerm).length === 0 ? (
           <p className="text-center text-gray-500">No data found.</p>
         ) : (
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            {filterInquiries(inquiryStatus).map((items) => (
+          <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            {filterInquiries(inquiryStatus, searchTerm).map((items) => (
               <div
                 className="border rounded-md p-4 bg-white shadow-md"
                 key={items._id || items.subject}
