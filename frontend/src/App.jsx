@@ -23,8 +23,8 @@ import ContactUs from "./view/landingpage/ContactUs";
 import LandingPageLayout from "./components/Layout/LandingPageLayout";
 import ForgotPassword from "./view/auth/ForgotPassword/ForgotPassword";
 import Notification from "./components/Norification/Notification";
-
-import ProtectedRoute from "./components/ProtectedPage/ProtectedRoute"; // Import ProtectedRoute
+import ProtectedRoute from "./components/ProtectedPage/ProtectedRoute";
+import ResetPassword from "./view/auth/ForgotPasswordPage/ResetPassword";
 
 function App() {
   return (
@@ -39,6 +39,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Route>
 
           {/* Admin Routes (Protected) */}

@@ -135,7 +135,7 @@ const SignUp = () => {
             <input
               type="password"
               name="secretKey"
-              placeholder="Enter Admin Secret Key"
+              placeholder="Enter Secret Key"
               value={formData.secretKey}
               onChange={handleInputChange}
               required

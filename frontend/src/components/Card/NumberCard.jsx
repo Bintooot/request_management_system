@@ -2,41 +2,41 @@ import React from "react";
 
 const NumberCard = ({ title, header, count, quantity, startDate, endDate }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-evenly items-center bg-green-500 rounded-lg text-white p-4 sm:p-6 shadow-lg w-full">
-      {/* Text Section */}
-      <div className="md:flex text-center grow justify-evenly">
-        <div className="md:text-left">
-          <h1 className="font-bold text-lg sm:text-xl">{title}</h1>
-          <h2 className="text-3xl sm:text-4xl font-semibold">{count}</h2>
+    <div className=" shadow-lg rounded-xl p-6 w-full bg-green-500 text-white mx-auto">
+      {/* Stats Section */}
+      <div className="flex justify-evenly items-center bg-gray-200 p-4 rounded-lg mt-4">
+        <div className="text-center">
+          <h1 className="text-lg font-semibold text-gray-700">{title}</h1>
+          <p className="text-4xl font-bold text-gray-900 mt-2">{count}</p>
         </div>
-        <div className="md:text-left">
-          <h1 className="font-bold text-lg sm:text-xl">{header}</h1>
-          <h2 className="text-3xl sm:text-4xl font-semibold">{quantity}</h2>
+        <div className="text-center ">
+          <h2 className="text-lg font-semibold text-gray-700">{header}</h2>
+          <p className="text-4xl font-bold text-gray-900 mt-2">{quantity}</p>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-        <div className="w-full sm:w-auto">
-          <label htmlFor="date-start" className="block text-sm sm:text-base">
+
+      {/* Date Picker Section */}
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="flex flex-col">
+          <label htmlFor="date-start" className="text-sm ">
             Start Date:
           </label>
           <input
-            onChange={(e) => startDate(e.target.value)}
             type="date"
+            onChange={(e) => startDate(e.target.value)}
             id="date-start"
-            name="date-start"
-            className="text-black p-2 rounded-md w-full sm:w-auto"
+            className="bg-white border border-gray-300 p-2 rounded-md text-gray-700 outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
-        <div className="w-full sm:w-auto">
-          <label htmlFor="date-end" className="block text-sm sm:text-base">
+        <div className="flex flex-col">
+          <label htmlFor="date-end" className="text-sm">
             End Date:
           </label>
           <input
             type="date"
             onChange={(e) => endDate(e.target.value)}
             id="date-end"
-            name="date-end"
-            className="text-black p-2 rounded-md w-full sm:w-auto"
+            className="bg-white border border-gray-300 p-2 rounded-md text-gray-700 outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
       </div>

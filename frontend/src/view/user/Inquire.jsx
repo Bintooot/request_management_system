@@ -206,7 +206,7 @@ const Inquire = () => {
           <div className="flex-1">
             <div className="w-full">
               <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
-                Previous Inquiries
+                Inquiry Records
               </h1>
             </div>
             <div className="flex justify-between gap-5">

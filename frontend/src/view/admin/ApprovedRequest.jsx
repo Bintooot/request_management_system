@@ -13,6 +13,8 @@ const ApprovedRequest = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updateStatus, setUpdateStatus] = useState("");
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalApprovedRequest, setTotalApprovedRequest] = useState(0);
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
@@ -35,12 +37,15 @@ const ApprovedRequest = () => {
     setIsLoading(true);
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.get("/api/admin/list-aprroved-request", {
+      const response = await axios.get("/api/admin/list-approved-request", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log(response.data.approvedlist);
       setApprovedList(response.data.approvedlist);
+      setTotalQuantity(response.data.totalQuantity);
+      setTotalApprovedRequest(response.data.totalApprovedRequest);
       setIsLoading(false);
     } catch (err) {
       setError("Failed to fetch approved requests.");
@@ -89,10 +94,22 @@ const ApprovedRequest = () => {
   return (
     <div className="border-2 shadow-lg rounded-lg p-4 md:p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0">
-        <h1 className="font-bold text-lg md:text-xl uppercase text-center md:text-left">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0 bg-white  p-4 rounded-lg">
+        <h1 className="font-bold text-lg md:text-xl uppercase text-center md:text-left text-gray-700">
           Approved Requests
         </h1>
+        <div className="flex gap-5">
+          <p className="text-gray-600 text-md md:text-lg  font-semibold">
+            Total Request:{" "}
+            <span className="text-blue-500 font-bold">
+              {totalApprovedRequest}
+            </span>
+          </p>
+          <p className="text-gray-600 text-md md:text-lg  font-semibold">
+            Total Quantity:{" "}
+            <span className="text-blue-500 font-bold">{totalQuantity}</span>
+          </p>
+        </div>
       </div>
 
       {notificationVisible && (
@@ -122,10 +139,11 @@ const ApprovedRequest = () => {
                   Type of Chicks
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Requested Date
+                  Quantity
                 </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Approval Date
+                  Delivery Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -158,19 +176,14 @@ const ApprovedRequest = () => {
                       {item.chicksType}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      {item.createdAt &&
-                      new Date(item.createdAt) !== "Invalid Date"
-                        ? format(
-                            new Date(item.createdAt),
-                            "MMMM dd, yyyy hh:mm a"
-                          )
-                        : "Invalid Date"}
+                      {item.quantity}
                     </td>
+
                     <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      {item.updatedAt &&
-                      new Date(item.updatedAt) !== "Invalid Date"
+                      {item.deliveryDate &&
+                      new Date(item.deliveryDate) !== "Invalid Date"
                         ? format(
-                            new Date(item.reviewedDate),
+                            new Date(item.deliveryDate),
                             "MMMM dd, yyyy hh:mm a"
                           )
                         : "Invalid Date"}

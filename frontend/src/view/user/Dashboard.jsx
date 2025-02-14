@@ -106,7 +106,11 @@ const Dashboard = () => {
       });
 
       const formattedData = response.data.map((item) => ({
-        name: item.date,
+        name: new Date(item.date).toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
         requests: item.count,
       }));
 

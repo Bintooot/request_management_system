@@ -58,6 +58,7 @@ const Notifications = () => {
           >
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">
+                <strong> Date:</strong>{" "}
                 {new Date(item.createdAt).toLocaleString()}
               </span>
               {!item.read && (

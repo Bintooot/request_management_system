@@ -257,31 +257,34 @@ router.get("/yearly-request-count", async (req, res) => {
       return res.status(400).json({ error: "Year is required" });
     }
 
-    // Start of the year (January 1, 00:00:00)
+    // Start and End of the Year
     const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    // End of the year (December 31, 23:59:59)
     const endDate = new Date(Date.UTC(year, 11, 31, 23, 59, 59));
 
     console.log("Yearly Start Date:", startDate.toISOString());
     console.log("Yearly End Date:", endDate.toISOString());
 
+    // Aggregate data
     const requestData = await Request.aggregate([
       {
         $match: {
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
-          },
+          createdAt: { $gte: startDate, $lte: endDate },
           status: { $in: ["Completed", "Rejected"] },
         },
       },
       {
         $group: {
-          _id: { $month: "$createdAt" },
-          count: { $sum: 1 },
+          _id: { month: { $month: "$createdAt" } },
+          totalRequests: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 1, 0] },
+          },
+          rejected: {
+            $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] },
+          },
         },
       },
-      { $sort: { _id: 1 } },
+      { $sort: { "_id.month": 1 } },
     ]);
 
     const monthNames = [
@@ -300,10 +303,14 @@ router.get("/yearly-request-count", async (req, res) => {
     ];
 
     const formattedData = monthNames.map((month, index) => {
-      const monthData = requestData.find((item) => item._id === index + 1);
+      const monthData = requestData.find(
+        (item) => item._id.month === index + 1
+      );
       return {
         month,
-        Request_Quantity: monthData ? monthData.count : 0,
+        Total_Requests: monthData ? monthData.totalRequests : 0,
+        Completed: monthData ? monthData.completed : 0,
+        Rejected: monthData ? monthData.rejected : 0,
       };
     });
 
@@ -507,16 +514,39 @@ router.get("/list-pending-inquiry", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-router.get("/list-aprroved-request", verifyToken, isAdmin, async (req, res) => {
+router.get("/list-approved-request", verifyToken, isAdmin, async (req, res) => {
   try {
     const approvedlist = await Request.find({
       status: { $in: ["Approved", "Out for Delivery"] },
     }).sort({ createdAt: -1 });
 
-    res.status(200).json({ approvedlist });
+    const totalQuantity = await Request.aggregate([
+      {
+        $match: {
+          status: { $in: ["Approved", "Out for Delivery"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$quantity" },
+        },
+      },
+    ]);
+
+    const totalApprovedRequest = await Request.countDocuments({
+      status: { $in: ["Approved", "Out for Delivery"] },
+    });
+
+    // Send response
+    res.status(200).json({
+      approvedlist,
+      totalApprovedRequest,
+      totalQuantity: totalQuantity[0]?.total || 0,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error in /list-approved-request:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 

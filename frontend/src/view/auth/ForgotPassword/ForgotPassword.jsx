@@ -14,10 +14,7 @@ const ForgotPassword = () => {
     setMessage("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password",
-        { email }
-      );
+      const response = await axios.post("/api/auth/forgot-password", { email });
       setMessage(response.data.message || "Password reset link sent!");
     } catch (err) {
       setError(
@@ -30,7 +27,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <div className="bg-white p-6 rounded-lg shadow-lg ">
         <h2 className="text-2xl font-semibold text-center mb-4">
           Forgot Password
         </h2>
